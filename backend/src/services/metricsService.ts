@@ -284,6 +284,49 @@ class MetricsService {
     };
   }
 
+  async submitMetric(metricData: { 
+    name: string; 
+    value: number; 
+    service: string; 
+    timestamp?: string; 
+    tags?: Record<string, string>; 
+  }): Promise<Metric> {
+    // Validate required fields
+    if (!metricData.name) {
+      throw new Error('Metric name is required');
+    }
+    if (metricData.value === undefined || metricData.value === null) {
+      throw new Error('Metric value is required');
+    }
+    if (!metricData.service) {
+      throw new Error('Metric service is required');
+    }
+
+    // Set default values
+    const enrichedData = {
+      ...metricData,
+      timestamp: metricData.timestamp || new Date().toISOString(),
+      tags: metricData.tags || {}
+    };
+
+    const id = await this.storeMetric(enrichedData);
+    
+    return {
+      id,
+      ...enrichedData,
+      created_at: new Date().toISOString()
+    };
+  }
+
+  async getMetricsStats(): Promise<MetricStats> {
+    return this.getStats();
+  }
+
+  clearAllMetrics(): void {
+    this.fallbackStorage = [];
+    logger.info('All metrics cleared from memory storage');
+  }
+
   async close(): Promise<void> {
     if (this.writeApi) {
       try {

@@ -1,0 +1,498 @@
+openapi: 3.0.3
+info:
+  title: Argus Monitoring Platform API
+  description: |
+    Comprehensive monitoring and observability platform API providing real-time visibility
+    into distributed systems, applications, and infrastructure.
+    
+    ## Features
+    - **Metrics Collection**: Submit and query time-series metrics
+    - **Log Management**: Centralized log aggregation and search
+    - **AI Analytics**: Anomaly detection and predictive analysis
+    - **Security Monitoring**: Security event tracking and threat detection
+    - **Alerting**: Intelligent alert management with notifications
+    - **Tracing**: Distributed tracing with OpenTelemetry support
+    
+    ## Authentication
+    Most endpoints require JWT authentication. Obtain a token via the `/api/auth/login` endpoint.
+  version: 1.0.0
+  contact:
+    name: Argus Team
+    url: https://github.com/ArashiWander/Argus
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001
+    description: Development server
+  - url: https://api.argus.example.com
+    description: Production server
+
+tags:
+  - name: Health
+    description: System health and status endpoints
+  - name: Authentication
+    description: User authentication and authorization
+  - name: Metrics
+    description: Time-series metrics collection and querying
+  - name: Logs
+    description: Log aggregation and search functionality
+  - name: Analytics
+    description: AI-powered analytics and anomaly detection
+  - name: Security
+    description: Security monitoring and threat detection
+  - name: Alerts
+    description: Alert management and notifications
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Get system health status
+      description: Returns the current health status of the Argus platform and its dependencies
+      responses:
+        '200':
+          description: System health information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uptime:
+                    type: number
+                    description: Server uptime in seconds
+                  message:
+                    type: string
+                    example: "OK"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  env:
+                    type: string
+                    example: "development"
+                  version:
+                    type: string
+                    example: "1.0.0"
+                  services:
+                    type: object
+                    properties:
+                      api:
+                        type: string
+                        example: "healthy"
+                      database:
+                        type: string
+                        example: "connected"
+                      cache:
+                        type: string
+                        example: "connected"
+
+  /api/auth/login:
+    post:
+      tags: [Authentication]
+      summary: Authenticate user
+      description: Login with username and password to receive JWT token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                  example: "admin"
+                password:
+                  type: string
+                  format: password
+                  example: "password123"
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authentication
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      username:
+                        type: string
+                      role:
+                        type: string
+                        enum: [admin, user, viewer]
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/metrics:
+    get:
+      tags: [Metrics]
+      summary: Retrieve metrics
+      description: Query time-series metrics with optional filtering
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: start
+          in: query
+          description: Start time (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          description: End time (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: service
+          in: query
+          description: Filter by service name
+          schema:
+            type: string
+        - name: metric_name
+          in: query
+          description: Filter by metric name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metrics:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Metric'
+                  count:
+                    type: integer
+                  timestamp:
+                    type: string
+                    format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Metrics]
+      summary: Submit metric
+      description: Submit a new time-series metric
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, value, service]
+              properties:
+                name:
+                  type: string
+                  description: Metric name
+                  example: "cpu.usage"
+                value:
+                  type: number
+                  description: Metric value
+                  example: 75.5
+                service:
+                  type: string
+                  description: Source service name
+                  example: "web-server"
+                timestamp:
+                  type: string
+                  format: date-time
+                  description: Metric timestamp (optional, defaults to current time)
+                tags:
+                  type: object
+                  additionalProperties:
+                    type: string
+                  description: Additional metadata tags
+                  example:
+                    host: "server-1"
+                    region: "us-east-1"
+      responses:
+        '201':
+          description: Metric submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Metric'
+        '400':
+          description: Invalid metric data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/metrics/stats:
+    get:
+      tags: [Metrics]
+      summary: Get metrics statistics
+      description: Retrieve aggregate statistics about stored metrics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Metrics statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_metrics:
+                    type: integer
+                    description: Total number of metrics
+                  unique_services:
+                    type: integer
+                    description: Number of unique services
+                  unique_metric_names:
+                    type: integer
+                    description: Number of unique metric names
+                  oldest_metric:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  newest_metric:
+                    type: string
+                    format: date-time
+                    nullable: true
+
+  /api/analytics/anomalies/detect:
+    post:
+      tags: [Analytics]
+      summary: Detect anomalies
+      description: Trigger anomaly detection for a specific metric and service
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [metric_name]
+              properties:
+                metric_name:
+                  type: string
+                  description: Name of the metric to analyze
+                  example: "cpu.usage"
+                service:
+                  type: string
+                  description: Service name (optional)
+                  example: "web-server"
+                lookback_hours:
+                  type: integer
+                  minimum: 1
+                  maximum: 168
+                  default: 24
+                  description: Hours of historical data to analyze
+                algorithm:
+                  type: string
+                  enum: [zscore, iqr, moving_average, seasonal]
+                  default: zscore
+                  description: Anomaly detection algorithm to use
+      responses:
+        '200':
+          description: Anomaly detection completed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Anomaly'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/analytics/predictions:
+    post:
+      tags: [Analytics]
+      summary: Generate predictive analysis
+      description: Generate predictions for metric values using machine learning
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [metric_name]
+              properties:
+                metric_name:
+                  type: string
+                  example: "memory.usage"
+                service:
+                  type: string
+                  example: "api-server"
+                horizon_hours:
+                  type: integer
+                  minimum: 1
+                  maximum: 168
+                  default: 24
+                  description: Prediction horizon in hours
+      responses:
+        '200':
+          description: Predictive analysis generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictiveAnalysis'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  schemas:
+    Metric:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique metric identifier
+        name:
+          type: string
+          description: Metric name
+          example: "cpu.usage"
+        value:
+          type: number
+          description: Metric value
+          example: 75.5
+        timestamp:
+          type: string
+          format: date-time
+          description: Metric timestamp
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+          description: Additional metadata tags
+        service:
+          type: string
+          description: Source service name
+          example: "web-server"
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp
+
+    Anomaly:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique anomaly identifier
+        metric_name:
+          type: string
+          description: Name of the metric where anomaly was detected
+        service:
+          type: string
+          description: Service name
+        timestamp:
+          type: string
+          format: date-time
+          description: Anomaly timestamp
+        expected_value:
+          type: number
+          description: Expected metric value
+        actual_value:
+          type: number
+          description: Actual metric value that triggered anomaly
+        anomaly_score:
+          type: number
+          description: Anomaly score (higher = more anomalous)
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+          description: Anomaly severity level
+        status:
+          type: string
+          enum: [active, acknowledged, resolved]
+          description: Anomaly status
+        created_at:
+          type: string
+          format: date-time
+
+    PredictiveAnalysis:
+      type: object
+      properties:
+        metric_name:
+          type: string
+          description: Analyzed metric name
+        service:
+          type: string
+          description: Service name
+        prediction_horizon_hours:
+          type: integer
+          description: Prediction horizon in hours
+        predicted_values:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              predicted_value:
+                type: number
+              confidence_interval:
+                type: object
+                properties:
+                  lower:
+                    type: number
+                  upper:
+                    type: number
+        analysis_timestamp:
+          type: string
+          format: date-time
+        model_accuracy:
+          type: number
+          description: Model accuracy score (0-1)
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error type
+        message:
+          type: string
+          description: Error message
+        timestamp:
+          type: string
+          format: date-time
+
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Unauthorized"
+            message: "Authentication token required"
+            timestamp: "2024-07-24T12:00:00.000Z"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from /api/auth/login endpoint
+
+security:
+  - bearerAuth: []

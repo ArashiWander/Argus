@@ -590,6 +590,23 @@ class AnalyticsService {
 
     return recommendations;
   }
+
+  async clearAllData(): Promise<void> {
+    try {
+      if (postgres) {
+        // Clear anomalies table
+        await postgres.query('DELETE FROM anomalies');
+        // Clear performance insights table  
+        await postgres.query('DELETE FROM performance_insights');
+        logger.info('Analytics data cleared from database');
+      } else {
+        logger.info('Analytics data cleared (in-memory mode)');
+      }
+    } catch (error) {
+      logger.error('Error clearing analytics data:', error);
+      throw error;
+    }
+  }
 }
 
 export const analyticsService = new AnalyticsService();

@@ -122,21 +122,6 @@ const Alerts: React.FC = () => {
     config: {},
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Redirect to login if not authenticated
-  if (!isAuthenticated || !user) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="400px">
-        <Typography variant="h6" color="text.secondary">
-          Please log in to access the alerts system.
-        </Typography>
-      </Box>
-    );
-  }
-
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -157,6 +142,21 @@ const Alerts: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated || !user) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="400px">
+        <Typography variant="h6" color="text.secondary">
+          Please log in to access the alerts system.
+        </Typography>
+      </Box>
+    );
+  }
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);

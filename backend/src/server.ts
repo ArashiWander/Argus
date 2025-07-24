@@ -12,10 +12,7 @@ import { metricsRoutes } from './routes/metrics';
 import { logsRoutes } from './routes/logs';
 import { authRoutes } from './routes/auth';
 import { alertRoutes } from './routes/alerts';
-import { analyticsRoutes } from './routes/analytics';
-import { securityRoutes } from './routes/security';
-import { alertService } from './services/alertService';
-import { securityService } from './services/securityService';
+
 
 // Load environment variables
 dotenv.config();
@@ -55,8 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/alerts', alertRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/security', securityRoutes);
+
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -100,11 +96,27 @@ const startServer = async () => {
       }
     }, 60000); // 1 minute
 
-    // Store interval ID for cleanup
-    process.on('SIGTERM', () => clearInterval(alertEvaluationInterval));
-    process.on('SIGINT', () => clearInterval(alertEvaluationInterval));
+    // Start anomaly detection scheduler (every 5 minutes)
+    const anomalyDetectionInterval = setInterval(async () => {
+      try {
+        await anomalyDetectionService.detectAnomalies();
+      } catch (error) {
+        logger.error('Anomaly detection failed:', error);
+      }
+    }, 300000); // 5 minutes
+
+    // Store interval IDs for cleanup
+    process.on('SIGTERM', () => {
+      clearInterval(alertEvaluationInterval);
+      clearInterval(anomalyDetectionInterval);
+    });
+    process.on('SIGINT', () => {
+      clearInterval(alertEvaluationInterval);
+      clearInterval(anomalyDetectionInterval);
+    });
 
     logger.info('Alert evaluation scheduler started (1 minute interval)');
+    logger.info('Anomaly detection scheduler started (5 minute interval)');
   } catch (error) {
     logger.error('Failed to start server:', error);
     process.exit(1);

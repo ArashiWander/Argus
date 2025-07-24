@@ -120,3 +120,43 @@ export interface NotificationChannel {
   enabled: boolean;
   created_at: string;
 }
+
+export interface TraceSpan {
+  id: string;
+  trace_id: string;
+  parent_id?: string;
+  operation_name: string;
+  service_name: string;
+  start_time: string;
+  end_time?: string;
+  duration_ms?: number;
+  status: 'ok' | 'error' | 'timeout';
+  tags: Record<string, any>;
+  logs: Array<{
+    timestamp: string;
+    fields: Record<string, any>;
+  }>;
+  created_at: string;
+}
+
+export interface TraceData {
+  trace_id: string;
+  spans: TraceSpan[];
+  services: string[];
+  duration_ms: number;
+  start_time: string;
+  end_time: string;
+  status: 'ok' | 'error' | 'timeout';
+  root_service: string;
+  root_operation: string;
+}
+
+export interface ServiceDependency {
+  caller_service: string;
+  callee_service: string;
+  operation: string;
+  call_count: number;
+  error_count: number;
+  avg_duration_ms: number;
+  last_called: string;
+}

@@ -9,7 +9,10 @@ import {
   User,
   AlertRule,
   Alert,
-  NotificationChannel
+  NotificationChannel,
+  TraceSpan,
+  TraceData,
+  ServiceDependency
 } from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
@@ -155,6 +158,42 @@ export const alertsApi = {
   
   triggerEvaluation: () => 
     api.post<{ message: string }>('/alerts/evaluate'),
+};
+
+// Tracing API
+export const tracingApi = {
+  // Traces
+  getTraces: (params?: {
+    service?: string;
+    operation?: string;
+    status?: string;
+    start?: string;
+    end?: string;
+    limit?: number;
+  }) => api.get<{ traces: TraceData[]; count: number }>('/tracing', { params }),
+  
+  getTrace: (traceId: string) => 
+    api.get<{ trace: TraceData }>(`/tracing/${traceId}`),
+  
+  getTraceSpans: (traceId: string) => 
+    api.get<{ spans: TraceSpan[]; count: number }>(`/tracing/${traceId}/spans`),
+  
+  // Spans
+  submitSpan: (span: Omit<TraceSpan, 'created_at'>) => 
+    api.post<{ span: TraceSpan; message: string }>('/tracing/spans', span),
+  
+  submitSpans: (spans: Omit<TraceSpan, 'created_at'>[]) => 
+    api.post<{ spans: TraceSpan[]; count: number; message: string }>('/tracing/spans/bulk', { spans }),
+  
+  // Dependencies
+  getServiceDependencies: (service?: string) => 
+    api.get<{ dependencies: ServiceDependency[]; count: number }>('/tracing/dependencies/services', {
+      params: service ? { service } : {}
+    }),
+  
+  // Statistics
+  getTracingStats: () => 
+    api.get('/tracing/stats/overview'),
 };
 
 export default api;

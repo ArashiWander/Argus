@@ -12,6 +12,7 @@ import { metricsRoutes } from './routes/metrics';
 import { logsRoutes } from './routes/logs';
 import { authRoutes } from './routes/auth';
 import { alertRoutes } from './routes/alerts';
+import { tracingRoutes } from './routes/tracing';
 import { alertService } from './services/alertService';
 
 // Load environment variables
@@ -52,6 +53,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/alerts', alertRoutes);
+app.use('/api/tracing', tracingRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

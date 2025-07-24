@@ -160,3 +160,27 @@ export interface ServiceDependency {
   avg_duration_ms: number;
   last_called: string;
 }
+
+export interface Anomaly {
+  id: string;
+  metric_name: string;
+  service: string;
+  timestamp: string;
+  actual_value: number;
+  expected_value: number;
+  deviation: number;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  algorithm: string;
+  description: string;
+  created_at: string;
+}
+
+export interface AnomalyDetectionConfig {
+  metric_name: string;
+  service?: string;
+  algorithm: 'zscore' | 'iqr' | 'moving_average' | 'seasonal';
+  sensitivity: number;
+  window_minutes: number;
+  enabled: boolean;
+  created_at: string;
+}

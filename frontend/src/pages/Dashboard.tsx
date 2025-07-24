@@ -14,8 +14,9 @@ import {
   Storage as StorageIcon,
   Timeline as TimelineIcon,
   BugReport as BugReportIcon,
+  Notifications as NotificationsIcon,
 } from '@mui/icons-material';
-import { healthApi, metricsApi, logsApi } from '../services/api';
+import { healthApi, metricsApi, logsApi, alertsApi } from '../services/api';
 import { HealthStatus } from '../types';
 import { MetricsChart, LogsChart } from '../components/Charts';
 
@@ -23,6 +24,7 @@ const Dashboard: React.FC = () => {
   const [health, setHealth] = useState<HealthStatus | null>(null);
   const [metricsStats, setMetricsStats] = useState<any>(null);
   const [logsStats, setLogsStats] = useState<any>(null);
+  const [alertStats, setAlertStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,15 +34,17 @@ const Dashboard: React.FC = () => {
         setLoading(true);
         setError(null);
 
-        const [healthResponse, metricsStatsResponse, logsStatsResponse] = await Promise.all([
+        const [healthResponse, metricsStatsResponse, logsStatsResponse, alertStatsResponse] = await Promise.all([
           healthApi.getHealth(),
           metricsApi.getStats(),
           logsApi.getStats(),
+          alertsApi.getAlertStats().catch(() => ({ data: null })), // Don't fail if alerts not available
         ]);
 
         setHealth(healthResponse.data);
         setMetricsStats(metricsStatsResponse.data);
         setLogsStats(logsStatsResponse.data);
+        setAlertStats(alertStatsResponse.data);
       } catch (err: any) {
         setError(err.message || 'Failed to fetch dashboard data');
       } finally {
@@ -199,6 +203,44 @@ const Dashboard: React.FC = () => {
           </Card>
         </Grid>
 
+        {/* Alert Stats */}
+        <Grid item xs={12} md={6} lg={3}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" mb={2}>
+                <NotificationsIcon color="primary" sx={{ mr: 1 }} />
+                <Typography variant="h6">Alerts</Typography>
+              </Box>
+              {alertStats && (
+                <>
+                  <Typography variant="h4" color={alertStats.active_alerts > 0 ? 'error' : 'primary'}>
+                    {alertStats.active_alerts || 0}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Active alerts
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Rules: {alertStats.enabled_rules || 0}
+                  </Typography>
+                </>
+              )}
+              {!alertStats && (
+                <>
+                  <Typography variant="h4" color="primary">
+                    0
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Active alerts
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Alert system ready
+                  </Typography>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
         {/* Metrics Visualization */}
         <Grid item xs={12}>
           <MetricsChart />
@@ -236,6 +278,37 @@ const Dashboard: React.FC = () => {
           </Grid>
         )}
 
+        {/* Alert Statistics */}
+        {alertStats && alertStats.alerts_by_severity && (
+          <Grid item xs={12} lg={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  Alert Severity Summary
+                </Typography>
+                <Grid container spacing={2}>
+                  {Object.entries(alertStats.alerts_by_severity).map(([severity, count]) => (
+                    <Grid item xs={6} sm={3} key={severity}>
+                      <Box textAlign="center">
+                        <Typography variant="h5" color={
+                          severity === 'critical' ? 'error.main' : 
+                          severity === 'high' ? 'warning.main' : 
+                          severity === 'medium' ? 'info.main' : 'success.main'
+                        }>
+                          {count as number}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'uppercase' }}>
+                          {severity}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+
         {/* Quick Actions */}
         <Grid item xs={12} md={6}>
           <Card>
@@ -250,10 +323,13 @@ const Dashboard: React.FC = () => {
                 • Search and filter logs in the Logs tab
               </Typography>
               <Typography variant="body2" color="text.secondary">
+                • Manage alerts and alert rules in the Alerts tab
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
                 • Submit custom metrics via API
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                • Configure alerts and notifications (coming soon)
+                • Configure notification channels for alerts
               </Typography>
             </CardContent>
           </Card>

@@ -75,3 +75,48 @@ export interface RegisterRequest {
   password: string;
   role?: string;
 }
+
+export interface AlertRule {
+  id: number;
+  name: string;
+  description?: string;
+  metric_name: string;
+  service?: string;
+  condition: 'greater_than' | 'less_than' | 'equals' | 'not_equals';
+  threshold: number;
+  duration_minutes: number;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  enabled: boolean;
+  notification_channels: string[];
+  created_by: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Alert {
+  id: number;
+  rule_id: number;
+  rule_name: string;
+  metric_name: string;
+  service?: string;
+  current_value: number;
+  threshold: number;
+  condition: string;
+  severity: string;
+  status: 'active' | 'acknowledged' | 'resolved';
+  triggered_at: string;
+  acknowledged_at?: string;
+  acknowledged_by?: number;
+  resolved_at?: string;
+  notification_sent: boolean;
+  message: string;
+}
+
+export interface NotificationChannel {
+  id: number;
+  name: string;
+  type: 'email' | 'webhook' | 'slack';
+  config: any;
+  enabled: boolean;
+  created_at: string;
+}

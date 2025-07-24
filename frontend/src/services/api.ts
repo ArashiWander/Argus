@@ -1,5 +1,16 @@
 import axios from 'axios';
-import { Metric, LogEntry, HealthStatus, AuthToken, LoginRequest, RegisterRequest, User } from '../types';
+import { 
+  Metric, 
+  LogEntry, 
+  HealthStatus, 
+  AuthToken, 
+  LoginRequest, 
+  RegisterRequest, 
+  User,
+  AlertRule,
+  Alert,
+  NotificationChannel
+} from '../types';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
@@ -101,6 +112,49 @@ export const authApi = {
   
   logout: () => 
     api.post<{ message: string }>('/auth/logout'),
+};
+
+// Alerts API
+export const alertsApi = {
+  // Alert Rules
+  getAlertRules: () => 
+    api.get<{ rules: AlertRule[]; count: number }>('/alerts/rules'),
+  
+  getAlertRule: (id: number) => 
+    api.get<{ rule: AlertRule }>(`/alerts/rules/${id}`),
+  
+  createAlertRule: (rule: Omit<AlertRule, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => 
+    api.post<{ rule: AlertRule; message: string }>('/alerts/rules', rule),
+  
+  updateAlertRule: (id: number, updates: Partial<AlertRule>) => 
+    api.put<{ rule: AlertRule; message: string }>(`/alerts/rules/${id}`, updates),
+  
+  deleteAlertRule: (id: number) => 
+    api.delete<{ message: string }>(`/alerts/rules/${id}`),
+  
+  // Alerts
+  getAlerts: (params?: { status?: string; severity?: string }) => 
+    api.get<{ alerts: Alert[]; count: number }>('/alerts', { params }),
+  
+  acknowledgeAlert: (id: number) => 
+    api.post<{ message: string }>(`/alerts/${id}/acknowledge`),
+  
+  resolveAlert: (id: number) => 
+    api.post<{ message: string }>(`/alerts/${id}/resolve`),
+  
+  // Notification Channels
+  getNotificationChannels: () => 
+    api.get<{ channels: NotificationChannel[]; count: number }>('/alerts/channels'),
+  
+  createNotificationChannel: (channel: Omit<NotificationChannel, 'id' | 'created_at'>) => 
+    api.post<{ channel: NotificationChannel; message: string }>('/alerts/channels', channel),
+  
+  // Statistics and Evaluation
+  getAlertStats: () => 
+    api.get('/alerts/stats'),
+  
+  triggerEvaluation: () => 
+    api.post<{ message: string }>('/alerts/evaluate'),
 };
 
 export default api;

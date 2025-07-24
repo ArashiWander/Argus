@@ -88,7 +88,42 @@ class MetricsService {
     return metric.id;
   }
 
-  async getMetrics(query: MetricQuery = {}): Promise<{ metrics: Metric[]; count: number }> {
+  // Method overloads for alertService compatibility
+  async getMetrics(
+    metricName: string,
+    service?: string,
+    startTime?: string,
+    endTime?: string
+  ): Promise<Metric[]>;
+  async getMetrics(query?: MetricQuery): Promise<{ metrics: Metric[]; count: number }>;
+  async getMetrics(
+    queryOrMetricName?: MetricQuery | string,
+    service?: string,
+    startTime?: string,
+    endTime?: string
+  ): Promise<{ metrics: Metric[]; count: number } | Metric[]> {
+    let query: MetricQuery;
+
+    // Handle different call signatures
+    if (typeof queryOrMetricName === 'string') {
+      // Called with individual parameters (metric_name, service, startTime, endTime)
+      query = {
+        metric_name: queryOrMetricName,
+        service,
+        start: startTime,
+        end: endTime,
+      };
+      
+      const result = await this.getMetricsData(query);
+      return result.metrics; // Return just the metrics array for alertService
+    } else {
+      // Called with query object (existing behavior)
+      query = queryOrMetricName || {};
+      return await this.getMetricsData(query);
+    }
+  }
+
+  private async getMetricsData(query: MetricQuery): Promise<{ metrics: Metric[]; count: number }> {
     if (influxDB) {
       try {
         return await this.getFromInfluxDB(query);

@@ -11,6 +11,8 @@ import { healthRoutes } from './routes/health';
 import { metricsRoutes } from './routes/metrics';
 import { logsRoutes } from './routes/logs';
 import { authRoutes } from './routes/auth';
+import { alertRoutes } from './routes/alerts';
+import { alertService } from './services/alertService';
 
 // Load environment variables
 dotenv.config();
@@ -49,6 +51,7 @@ app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/logs', logsRoutes);
+app.use('/api/alerts', alertRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -82,6 +85,21 @@ const startServer = async () => {
       logger.info(`Argus backend server running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
     });
+
+    // Start alert evaluation scheduler (every 1 minute)
+    const alertEvaluationInterval = setInterval(async () => {
+      try {
+        await alertService.evaluateAlertRules();
+      } catch (error) {
+        logger.error('Alert evaluation failed:', error);
+      }
+    }, 60000); // 1 minute
+
+    // Store interval ID for cleanup
+    process.on('SIGTERM', () => clearInterval(alertEvaluationInterval));
+    process.on('SIGINT', () => clearInterval(alertEvaluationInterval));
+
+    logger.info('Alert evaluation scheduler started (1 minute interval)');
   } catch (error) {
     logger.error('Failed to start server:', error);
     process.exit(1);

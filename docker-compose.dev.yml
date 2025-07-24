@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # InfluxDB for time-series metrics
+  influxdb:
+    image: influxdb:2.7
+    container_name: argus-influxdb
+    ports:
+      - "8086:8086"
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=password123
+      - DOCKER_INFLUXDB_INIT_ORG=argus
+      - DOCKER_INFLUXDB_INIT_BUCKET=metrics
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=argus-influxdb-token
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    networks:
+      - argus-network
+
+  # Elasticsearch for logs and search
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: argus-elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - argus-network
+
+  # PostgreSQL for metadata and configuration
+  postgres:
+    image: postgres:15
+    container_name: argus-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=argus
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - argus-network
+
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: argus-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - argus-network
+
+volumes:
+  influxdb_data:
+  elasticsearch_data:
+  postgres_data:
+  redis_data:
+
+networks:
+  argus-network:
+    driver: bridge

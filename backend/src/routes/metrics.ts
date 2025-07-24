@@ -1,40 +1,26 @@
 import { Router, Request, Response } from 'express';
 import { logger } from '../config/logger';
+import { metricsService } from '../services/metricsService';
 
 const router = Router();
 
-// In-memory storage for demo purposes (will be replaced with proper database)
-const metrics: any[] = [];
-
 // Get all metrics
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
     const { start, end, service, metric_name } = req.query;
     
-    let filteredMetrics = metrics;
+    const query = {
+      start: start as string,
+      end: end as string,
+      service: service as string,
+      metric_name: metric_name as string,
+    };
     
-    // Apply filters
-    if (service) {
-      filteredMetrics = filteredMetrics.filter(m => m.service === service);
-    }
-    
-    if (metric_name) {
-      filteredMetrics = filteredMetrics.filter(m => m.name === metric_name);
-    }
-    
-    if (start || end) {
-      const startTime = start ? new Date(start as string).getTime() : 0;
-      const endTime = end ? new Date(end as string).getTime() : Date.now();
-      
-      filteredMetrics = filteredMetrics.filter(m => {
-        const metricTime = new Date(m.timestamp).getTime();
-        return metricTime >= startTime && metricTime <= endTime;
-      });
-    }
+    const { metrics, count } = await metricsService.getMetrics(query);
     
     res.json({
-      metrics: filteredMetrics,
-      count: filteredMetrics.length,
+      metrics,
+      count,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
@@ -44,7 +30,7 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 // Submit metrics
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
     const { name, value, timestamp, tags, service } = req.body;
     
@@ -54,28 +40,19 @@ router.post('/', (req: Request, res: Response) => {
       });
     }
     
-    const metric = {
-      id: Date.now().toString(),
+    const metricData = {
       name,
       value: parseFloat(value),
       timestamp: timestamp || new Date().toISOString(),
       tags: tags || {},
       service: service || 'unknown',
-      created_at: new Date().toISOString()
     };
     
-    metrics.push(metric);
-    
-    // Keep only last 1000 metrics in memory for demo
-    if (metrics.length > 1000) {
-      metrics.splice(0, metrics.length - 1000);
-    }
-    
-    logger.info(`Metric received: ${name} = ${value} from ${service}`);
+    const metricId = await metricsService.storeMetric(metricData);
     
     res.status(201).json({
       message: 'Metric stored successfully',
-      metric_id: metric.id
+      metric_id: metricId
     });
   } catch (error) {
     logger.error('Error storing metric:', error);
@@ -84,16 +61,9 @@ router.post('/', (req: Request, res: Response) => {
 });
 
 // Get metric statistics
-router.get('/stats', (req: Request, res: Response) => {
+router.get('/stats', async (req: Request, res: Response) => {
   try {
-    const stats = {
-      total_metrics: metrics.length,
-      unique_services: new Set(metrics.map(m => m.service)).size,
-      unique_metric_names: new Set(metrics.map(m => m.name)).size,
-      oldest_metric: metrics.length > 0 ? metrics[0].timestamp : null,
-      newest_metric: metrics.length > 0 ? metrics[metrics.length - 1].timestamp : null
-    };
-    
+    const stats = await metricsService.getStats();
     res.json(stats);
   } catch (error) {
     logger.error('Error generating metric stats:', error);

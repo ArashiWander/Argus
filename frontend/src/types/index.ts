@@ -44,5 +44,34 @@ export interface HealthStatus {
     api: string;
     database: string;
     cache: string;
+    influxdb: string;
+    elasticsearch: string;
   };
+}
+
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AuthToken {
+  token: string;
+  expiresIn: string;
+  user: User;
+}
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+  role?: string;
 }

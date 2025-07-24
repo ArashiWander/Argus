@@ -1,27 +1,46 @@
 import { Router, Request, Response } from 'express';
 import { logger } from '../config/logger';
+import { checkDatabaseHealth } from '../config/database';
 
 const router = Router();
 
 // Health check endpoint
-router.get('/', (req: Request, res: Response) => {
-  const healthCheck = {
-    uptime: process.uptime(),
-    message: 'OK',
-    timestamp: new Date().toISOString(),
-    env: process.env.NODE_ENV || 'development',
-    version: '1.0.0',
-    services: {
-      api: 'healthy',
-      database: 'not_connected', // Will be updated when databases are integrated
-      cache: 'not_connected'
-    }
-  };
-
+router.get('/', async (req: Request, res: Response) => {
   try {
+    const dbHealth = await checkDatabaseHealth();
+    
+    const healthCheck = {
+      uptime: process.uptime(),
+      message: 'OK',
+      timestamp: new Date().toISOString(),
+      env: process.env.NODE_ENV || 'development',
+      version: '1.0.0',
+      services: {
+        api: 'healthy',
+        database: dbHealth.postgres,
+        cache: dbHealth.redis,
+        influxdb: dbHealth.influx,
+        elasticsearch: dbHealth.elasticsearch,
+      }
+    };
+
     res.status(200).json(healthCheck);
   } catch (error) {
-    healthCheck.message = 'Error occurred';
+    const healthCheck = {
+      uptime: process.uptime(),
+      message: 'Error occurred',
+      timestamp: new Date().toISOString(),
+      env: process.env.NODE_ENV || 'development',
+      version: '1.0.0',
+      services: {
+        api: 'error',
+        database: 'error',
+        cache: 'error',
+        influxdb: 'error',
+        elasticsearch: 'error',
+      }
+    };
+    
     logger.error('Health check failed:', error);
     res.status(503).json(healthCheck);
   }

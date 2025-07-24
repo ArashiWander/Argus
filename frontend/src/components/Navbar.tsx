@@ -29,6 +29,8 @@ const Navbar: React.FC = () => {
     { label: 'Metrics', path: '/metrics' },
     { label: 'Logs', path: '/logs' },
     { label: 'Alerts', path: '/alerts' },
+    { label: 'Analytics', path: '/analytics' },
+    { label: 'Security', path: '/security' },
   ];
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {

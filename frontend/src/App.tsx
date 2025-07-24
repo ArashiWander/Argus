@@ -7,6 +7,8 @@ import Dashboard from './pages/Dashboard';
 import Metrics from './pages/Metrics';
 import Logs from './pages/Logs';
 import Alerts from './pages/Alerts';
+import Analytics from './pages/Analytics';
+import Security from './pages/Security';
 import Auth from './pages/Auth';
 
 const AppContent: React.FC = () => {
@@ -34,6 +36,8 @@ const AppContent: React.FC = () => {
           <Route path="/metrics" element={<Metrics />} />
           <Route path="/logs" element={<Logs />} />
           <Route path="/alerts" element={<Alerts />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/security" element={<Security />} />
           <Route path="/auth" element={<Auth />} />
         </Routes>
       </Box>

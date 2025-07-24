@@ -3,6 +3,8 @@ import { Client as ElasticsearchClient } from '@elastic/elasticsearch';
 import { Pool } from 'pg';
 import Redis from 'ioredis';
 import { logger } from './logger';
+import * as fs from 'fs';
+import * as path from 'path';
 
 // Database configuration
 export const dbConfig = {
@@ -70,6 +72,10 @@ export const initializeDatabases = async (): Promise<void> => {
     if (process.env.DATABASE_URL) {
       postgres = new Pool(dbConfig.postgres);
       await postgres.query('SELECT NOW()');
+      
+      // Initialize Phase 4 schema
+      await initializePhase4Schema();
+      
       logger.info('PostgreSQL connection established');
     } else {
       logger.warn('PostgreSQL URL not provided, using in-memory storage for metadata');
@@ -175,4 +181,26 @@ export const checkDatabaseHealth = async (): Promise<{
   }
 
   return health;
+};
+
+// Initialize Phase 4 database schema
+const initializePhase4Schema = async (): Promise<void> => {
+  if (!postgres) {
+    logger.warn('PostgreSQL not available, skipping Phase 4 schema initialization');
+    return;
+  }
+
+  try {
+    logger.info('Initializing Phase 4 database schema...');
+    
+    const schemaPath = path.join(__dirname, 'phase4_schema.sql');
+    const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+    
+    await postgres.query(schemaSql);
+    
+    logger.info('Phase 4 database schema initialized successfully');
+  } catch (error) {
+    logger.error('Failed to initialize Phase 4 schema:', error);
+    // Don't throw error to allow application to continue with in-memory fallbacks
+  }
 };

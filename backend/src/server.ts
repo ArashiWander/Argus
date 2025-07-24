@@ -12,6 +12,8 @@ import { metricsRoutes } from './routes/metrics';
 import { logsRoutes } from './routes/logs';
 import { authRoutes } from './routes/auth';
 import { alertRoutes } from './routes/alerts';
+import { alertService } from './services/alertService';
+import { anomalyDetectionService } from './services/anomalyDetectionService';
 
 
 // Load environment variables

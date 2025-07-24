@@ -10,6 +10,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { healthRoutes } from './routes/health';
 import { metricsRoutes } from './routes/metrics';
 import { logsRoutes } from './routes/logs';
+import { authRoutes } from './routes/auth';
 
 // Load environment variables
 dotenv.config();
@@ -45,6 +46,7 @@ app.use((req, res, next) => {
 
 // API routes
 app.use('/api/health', healthRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/logs', logsRoutes);
 

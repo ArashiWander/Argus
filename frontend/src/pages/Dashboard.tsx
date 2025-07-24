@@ -17,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import { healthApi, metricsApi, logsApi } from '../services/api';
 import { HealthStatus } from '../types';
+import { MetricsChart, LogsChart } from '../components/Charts';
 
 const Dashboard: React.FC = () => {
   const [health, setHealth] = useState<HealthStatus | null>(null);
@@ -198,13 +199,23 @@ const Dashboard: React.FC = () => {
           </Card>
         </Grid>
 
+        {/* Metrics Visualization */}
+        <Grid item xs={12}>
+          <MetricsChart />
+        </Grid>
+
+        {/* Log Analysis */}
+        <Grid item xs={12} lg={6}>
+          <LogsChart />
+        </Grid>
+
         {/* Log Level Distribution */}
         {logsStats && logsStats.level_distribution && (
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} lg={6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  Log Level Distribution
+                  Log Level Summary
                 </Typography>
                 <Grid container spacing={2}>
                   {Object.entries(logsStats.level_distribution).map(([level, count]) => (
@@ -242,7 +253,7 @@ const Dashboard: React.FC = () => {
                 • Submit custom metrics via API
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                • Configure alerts and notifications
+                • Configure alerts and notifications (coming soon)
               </Typography>
             </CardContent>
           </Card>

@@ -44,5 +44,7 @@ export interface HealthStatus {
     api: string;
     database: string;
     cache: string;
+    influxdb: string;
+    elasticsearch: string;
   };
 }

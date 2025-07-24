@@ -5,6 +5,7 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { logger } from './config/logger';
+import { initializeDatabases, closeDatabases } from './config/database';
 import { errorHandler } from './middleware/errorHandler';
 import { healthRoutes } from './routes/health';
 import { metricsRoutes } from './routes/metrics';
@@ -70,20 +71,31 @@ app.use('*', (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  logger.info(`Argus backend server running on port ${PORT}`);
-  logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+const startServer = async () => {
+  try {
+    // Initialize database connections
+    await initializeDatabases();
+    
+    app.listen(PORT, () => {
+      logger.info(`Argus backend server running on port ${PORT}`);
+      logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } catch (error) {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
 
 // Graceful shutdown
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received, shutting down gracefully');
+const gracefulShutdown = async () => {
+  logger.info('Shutting down gracefully...');
+  await closeDatabases();
   process.exit(0);
-});
+};
 
-process.on('SIGINT', () => {
-  logger.info('SIGINT received, shutting down gracefully');
-  process.exit(0);
-});
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
 
 export default app;

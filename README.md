@@ -44,6 +44,32 @@ A comprehensive monitoring and observability platform designed to provide real-t
    ```
    Frontend will be available at `http://localhost:3000`
 
+### Database Setup (Optional)
+
+For production-like experience with persistent storage:
+
+1. **Start databases with Docker Compose**
+   ```bash
+   docker-compose -f docker-compose.dev.yml up -d
+   ```
+
+2. **Configure environment variables**
+   ```bash
+   cd backend
+   # Edit .env file to include database URLs
+   INFLUXDB_URL=http://localhost:8086
+   ELASTICSEARCH_URL=http://localhost:9200
+   DATABASE_URL=postgresql://postgres:password@localhost:5432/argus
+   REDIS_URL=redis://localhost:6379
+   ```
+
+3. **Restart backend**
+   ```bash
+   npm run dev
+   ```
+
+See [Database Setup Guide](docs/DATABASE_SETUP.md) for detailed instructions.
+
 ### Docker Deployment
 
 ```bash
@@ -113,7 +139,12 @@ POST /api/logs/bulk
 ### Backend
 - **Runtime**: Node.js with TypeScript
 - **Framework**: Express.js
-- **Storage**: In-memory (development), will expand to InfluxDB, Elasticsearch, PostgreSQL
+- **Storage**: 
+  - **InfluxDB** for time-series metrics data
+  - **Elasticsearch** for logs and search
+  - **PostgreSQL** for metadata and configuration
+  - **Redis** for caching and session management
+  - In-memory fallback for development without databases
 - **Features**: RESTful API, health checks, error handling, logging
 
 ### Frontend
@@ -187,11 +218,15 @@ PORT=3001
 LOG_LEVEL=info
 FRONTEND_URL=http://localhost:3000
 
-# Database URLs (when implemented)
-# DATABASE_URL=postgresql://username:password@localhost:5432/argus
-# INFLUXDB_URL=http://localhost:8086
-# ELASTICSEARCH_URL=http://localhost:9200
-# REDIS_URL=redis://localhost:6379
+# Database URLs
+INFLUXDB_URL=http://localhost:8086
+INFLUXDB_TOKEN=your-influxdb-token
+INFLUXDB_ORG=argus
+INFLUXDB_BUCKET=metrics
+
+ELASTICSEARCH_URL=http://localhost:9200
+DATABASE_URL=postgresql://username:password@localhost:5432/argus
+REDIS_URL=redis://localhost:6379
 ```
 
 ### Docker Production Deployment
@@ -227,16 +262,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 See [project_argus_blueprint.md](project_argus_blueprint.md) for the complete roadmap and implementation plan.
 
-### Phase 1 (Current) ✅
-- Basic project infrastructure
-- Core API endpoints for metrics and logs
-- Web interface for data visualization
-- Docker containerization
-- CI/CD pipeline
+### Phase 1 ✅
+- [x] Basic project infrastructure
+- [x] Core API endpoints for metrics and logs
+- [x] Web interface for data visualization
+- [x] Docker containerization
+- [x] CI/CD pipeline
 
-### Phase 2 (Next)
-- Database integration (InfluxDB, Elasticsearch, PostgreSQL)
-- Advanced dashboard features
-- User authentication
-- Alert system
-- Performance optimizations
+### Phase 2 (In Progress) 🚧
+- [x] Database integration (InfluxDB, Elasticsearch, PostgreSQL, Redis)
+- [x] Enhanced health monitoring with database status
+- [x] Fallback to in-memory storage for development
+- [ ] Advanced dashboard features
+- [ ] User authentication
+- [ ] Alert system
+- [ ] Performance optimizations

@@ -12,6 +12,8 @@ import { metricsRoutes } from './routes/metrics';
 import { logsRoutes } from './routes/logs';
 import { authRoutes } from './routes/auth';
 import { alertRoutes } from './routes/alerts';
+import { analyticsRoutes } from './routes/analytics';
+import { securityRoutes } from './routes/security';
 import { alertService } from './services/alertService';
 import { anomalyDetectionService } from './services/anomalyDetectionService';
 
@@ -54,6 +56,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/alerts', alertRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/security', securityRoutes);
 
 
 // Root endpoint

@@ -1,12 +1,13 @@
 import { Router, Request, Response } from 'express';
 import { authService } from '../services/authService';
 import { authenticateToken, requireRole, AuthenticatedRequest } from '../middleware/auth';
+import { logAuthenticationEvent, auditableEndpoint, secureDataAccess } from '../middleware/audit';
 import { logger } from '../config/logger';
 
 const router = Router();
 
 // Register new user
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/register', logAuthenticationEvent('register'), async (req: Request, res: Response) => {
   try {
     const { username, email, password, role } = req.body;
 
@@ -53,7 +54,7 @@ router.post('/register', async (req: Request, res: Response) => {
 });
 
 // Login user
-router.post('/login', async (req: Request, res: Response) => {
+router.post('/login', logAuthenticationEvent('login'), async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;
 
@@ -76,7 +77,7 @@ router.post('/login', async (req: Request, res: Response) => {
 });
 
 // Get current user profile
-router.get('/profile', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/profile', authenticateToken, ...secureDataAccess('user_profile'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     if (!req.user) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -96,7 +97,7 @@ router.get('/profile', authenticateToken, async (req: AuthenticatedRequest, res:
 });
 
 // Get all users (admin only)
-router.get('/users', authenticateToken, requireRole('admin'), async (req: AuthenticatedRequest, res: Response) => {
+router.get('/users', authenticateToken, requireRole('admin'), ...secureDataAccess('users'), async (req: AuthenticatedRequest, res: Response) => {
   try {
     const users = await authService.getAllUsers();
     res.json({ users, count: users.length });

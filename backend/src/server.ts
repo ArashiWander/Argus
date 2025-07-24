@@ -12,10 +12,7 @@ import { metricsRoutes } from './routes/metrics';
 import { logsRoutes } from './routes/logs';
 import { authRoutes } from './routes/auth';
 import { alertRoutes } from './routes/alerts';
-import { tracingRoutes } from './routes/tracing';
-import { anomalyRoutes } from './routes/anomalies';
-import { alertService } from './services/alertService';
-import { anomalyDetectionService } from './services/anomalyDetectionService';
+
 
 // Load environment variables
 dotenv.config();
@@ -55,8 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/metrics', metricsRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/alerts', alertRoutes);
-app.use('/api/tracing', tracingRoutes);
-app.use('/api/anomalies', anomalyRoutes);
+
 
 // Root endpoint
 app.get('/', (req, res) => {

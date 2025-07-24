@@ -47,6 +47,9 @@ export const requireRole = (roles: string | string[]) => {
 
     const allowedRoles = Array.isArray(roles) ? roles : [roles];
     
+    // Store required role for audit logging
+    (req as any).requiredRole = allowedRoles.join(',');
+    
     if (!allowedRoles.includes(req.user.role)) {
       res.status(403).json({ 
         error: 'Insufficient permissions',

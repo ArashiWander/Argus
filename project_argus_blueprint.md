@@ -169,11 +169,15 @@ To provide organizations with a unified, scalable, and intelligent monitoring so
   - [x] Service dependency mapping and analysis
   - [x] Trace visualization with detailed span inspection
   - [x] Performance metrics and error rate tracking
-- [ ] Add anomaly detection algorithms
-  - [ ] Machine learning-based anomaly detection for metrics
-  - [ ] Behavioral analysis for unusual patterns
-  - [ ] Predictive alerting based on historical data
-  - [ ] Automated threshold adjustment
+- [x] Add anomaly detection algorithms
+  - [x] Z-Score algorithm for statistical outlier detection
+  - [x] IQR (Interquartile Range) algorithm for robust outlier detection
+  - [x] Moving Average algorithm for trend-based anomaly detection
+  - [x] Seasonal algorithm for time-pattern-based detection
+  - [x] Configurable sensitivity and detection windows
+  - [x] Automated scheduling with 5-minute intervals
+  - [x] Severity classification (low, medium, high, critical)
+  - [x] Real-time anomaly statistics and reporting
 - [ ] Develop mobile application
   - [ ] React Native mobile app for monitoring on-the-go
   - [ ] Push notifications for critical alerts

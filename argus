@@ -1,0 +1,312 @@
+#!/bin/bash
+
+# Argus Platform CLI Helper
+# Provides easy-to-use commands for common platform operations
+
+set -e
+
+# Colors and styling
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+NC='\033[0m'
+
+# Emojis
+ROCKET="🚀"
+CHECKMARK="✅"
+CROSS="❌"
+GEAR="⚙️"
+CHART="📊"
+LOGS="📝"
+COMPUTER="💻"
+GLOBE="🌐"
+
+BASE_URL="http://localhost:3001"
+API_URL="$BASE_URL/api"
+
+print_usage() {
+    echo -e "${PURPLE}${BOLD}Argus Platform CLI Helper${NC}\n"
+    echo -e "${CYAN}Usage: $0 <command> [options]${NC}\n"
+    echo -e "${YELLOW}${BOLD}Available Commands:${NC}"
+    echo -e "  ${GREEN}status${NC}          - Check platform status and health"
+    echo -e "  ${GREEN}start${NC}           - Start the platform"
+    echo -e "  ${GREEN}stop${NC}            - Stop the platform"
+    echo -e "  ${GREEN}restart${NC}         - Restart the platform"
+    echo -e "  ${GREEN}setup${NC}           - Run the setup wizard"
+    echo -e "  ${GREEN}demo${NC}            - Generate sample data"
+    echo -e "  ${GREEN}logs${NC} [level]    - View logs (optional: error, warn, info, debug)"
+    echo -e "  ${GREEN}metrics${NC}         - View metrics statistics"
+    echo -e "  ${GREEN}health${NC}          - Detailed health check"
+    echo -e "  ${GREEN}submit-metric${NC}   - Submit a metric (interactive)"
+    echo -e "  ${GREEN}submit-log${NC}      - Submit a log entry (interactive)"
+    echo -e "  ${GREEN}clean${NC}           - Clean build files and reset"
+    echo -e "  ${GREEN}help${NC}            - Show this help message"
+    echo ""
+    echo -e "${CYAN}${BOLD}Examples:${NC}"
+    echo -e "  $0 start              # Start the platform"
+    echo -e "  $0 logs error         # View error logs"
+    echo -e "  $0 submit-metric      # Interactive metric submission"
+    echo -e "  $0 status             # Check if everything is running"
+    echo ""
+}
+
+check_backend() {
+    curl -s "$API_URL/health" > /dev/null 2>&1
+}
+
+print_status() {
+    echo -e "${BLUE}${BOLD}$COMPUTER Platform Status:${NC}"
+    
+    # Check backend
+    echo -ne "  Backend (port 3001): "
+    if check_backend; then
+        echo -e "${GREEN}$CHECKMARK Running${NC}"
+    else
+        echo -e "${RED}$CROSS Not running${NC}"
+    fi
+    
+    # Check frontend
+    echo -ne "  Frontend (port 3000): "
+    if curl -s http://localhost:3000 > /dev/null 2>&1; then
+        echo -e "${GREEN}$CHECKMARK Running${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Not accessible${NC}"
+    fi
+    
+    # Check processes
+    backend_proc=$(pgrep -f "npm.*dev\|node.*server" | wc -l)
+    frontend_proc=$(pgrep -f "npm.*start\|react-scripts" | wc -l)
+    
+    echo -e "  Backend processes: $backend_proc"
+    echo -e "  Frontend processes: $frontend_proc"
+}
+
+cmd_status() {
+    print_status
+    
+    if check_backend; then
+        echo -e "\n${BLUE}${BOLD}$GLOBE Access Points:${NC}"
+        echo -e "  Frontend:  ${CYAN}http://localhost:3000${NC}"
+        echo -e "  Backend:   ${CYAN}http://localhost:3001${NC}"
+        echo -e "  Health:    ${CYAN}http://localhost:3001/api/health${NC}"
+    fi
+}
+
+cmd_start() {
+    echo -e "${BLUE}$ROCKET Starting Argus Platform...${NC}"
+    
+    if [ ! -f "backend/.env" ]; then
+        echo -e "${YELLOW}⚠️  No environment file found. Running setup first...${NC}"
+        ./setup.sh
+    fi
+    
+    if [ -f "start.sh" ]; then
+        ./start.sh
+    else
+        echo -e "${RED}$CROSS start.sh not found. Please run setup first.${NC}"
+        exit 1
+    fi
+}
+
+cmd_stop() {
+    echo -e "${YELLOW}Stopping Argus Platform...${NC}"
+    
+    # Kill backend processes
+    pkill -f "npm.*dev\|ts-node-dev" 2>/dev/null || true
+    
+    # Kill frontend processes  
+    pkill -f "npm.*start\|react-scripts" 2>/dev/null || true
+    
+    # Kill any remaining Node processes on our ports
+    lsof -ti:3000,3001 | xargs kill -9 2>/dev/null || true
+    
+    echo -e "${GREEN}$CHECKMARK Platform stopped${NC}"
+}
+
+cmd_restart() {
+    cmd_stop
+    sleep 2
+    cmd_start
+}
+
+cmd_health() {
+    if [ -f "health-check.sh" ]; then
+        ./health-check.sh
+    else
+        echo -e "${BLUE}Running basic health check...${NC}"
+        print_status
+        
+        if check_backend; then
+            echo -e "\n${BLUE}Health Details:${NC}"
+            curl -s "$API_URL/health" | jq . 2>/dev/null || curl -s "$API_URL/health"
+        fi
+    fi
+}
+
+cmd_logs() {
+    local level=$1
+    
+    if ! check_backend; then
+        echo -e "${RED}$CROSS Backend not running. Please start it first.${NC}"
+        exit 1
+    fi
+    
+    echo -e "${BLUE}${BOLD}$LOGS Recent Logs${NC}"
+    if [ -n "$level" ]; then
+        echo -e "${CYAN}Filtering by level: $level${NC}\n"
+        curl -s "$API_URL/logs?level=$level&limit=20" | jq '.logs[]' 2>/dev/null || curl -s "$API_URL/logs?level=$level&limit=20"
+    else
+        echo -e "${CYAN}Showing recent logs (all levels)${NC}\n"
+        curl -s "$API_URL/logs?limit=20" | jq '.logs[]' 2>/dev/null || curl -s "$API_URL/logs?limit=20"
+    fi
+}
+
+cmd_metrics() {
+    if ! check_backend; then
+        echo -e "${RED}$CROSS Backend not running. Please start it first.${NC}"
+        exit 1
+    fi
+    
+    echo -e "${BLUE}${BOLD}$CHART Metrics Statistics${NC}\n"
+    curl -s "$API_URL/metrics/stats" | jq . 2>/dev/null || curl -s "$API_URL/metrics/stats"
+    
+    echo -e "\n${BLUE}${BOLD}Recent Metrics Sample:${NC}"
+    curl -s "$API_URL/metrics?limit=5" | jq '.metrics[]' 2>/dev/null || curl -s "$API_URL/metrics?limit=5"
+}
+
+cmd_submit_metric() {
+    if ! check_backend; then
+        echo -e "${RED}$CROSS Backend not running. Please start it first.${NC}"
+        exit 1
+    fi
+    
+    echo -e "${BLUE}${BOLD}$CHART Submit a Metric${NC}\n"
+    
+    echo -ne "${CYAN}Metric name (e.g., cpu.usage): ${NC}"
+    read -r metric_name
+    
+    echo -ne "${CYAN}Value (numeric): ${NC}"
+    read -r metric_value
+    
+    echo -ne "${CYAN}Service name (e.g., web-server): ${NC}"
+    read -r service_name
+    
+    echo -ne "${CYAN}Host (optional, default: localhost): ${NC}"
+    read -r host_name
+    host_name=${host_name:-localhost}
+    
+    curl -s -X POST "$API_URL/metrics" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"name\": \"$metric_name\",
+            \"value\": $metric_value,
+            \"service\": \"$service_name\",
+            \"tags\": {\"host\": \"$host_name\"}
+        }" > /dev/null
+    
+    echo -e "${GREEN}$CHECKMARK Metric submitted successfully!${NC}"
+}
+
+cmd_submit_log() {
+    if ! check_backend; then
+        echo -e "${RED}$CROSS Backend not running. Please start it first.${NC}"
+        exit 1
+    fi
+    
+    echo -e "${BLUE}${BOLD}$LOGS Submit a Log Entry${NC}\n"
+    
+    echo -e "${CYAN}Log level:${NC}"
+    echo -e "  1) debug"
+    echo -e "  2) info"
+    echo -e "  3) warn"
+    echo -e "  4) error"
+    echo -ne "Choose (1-4): "
+    read -r level_choice
+    
+    case $level_choice in
+        1) log_level="debug" ;;
+        2) log_level="info" ;;
+        3) log_level="warn" ;;
+        4) log_level="error" ;;
+        *) log_level="info" ;;
+    esac
+    
+    echo -ne "${CYAN}Log message: ${NC}"
+    read -r log_message
+    
+    echo -ne "${CYAN}Service name: ${NC}"
+    read -r service_name
+    
+    curl -s -X POST "$API_URL/logs" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"level\": \"$log_level\",
+            \"message\": \"$log_message\",
+            \"service\": \"$service_name\",
+            \"tags\": {\"source\": \"cli\"}
+        }" > /dev/null
+    
+    echo -e "${GREEN}$CHECKMARK Log entry submitted successfully!${NC}"
+}
+
+cmd_clean() {
+    echo -e "${YELLOW}Cleaning build files and resetting environment...${NC}"
+    
+    # Stop platform first
+    cmd_stop
+    
+    # Remove build files
+    rm -rf backend/dist backend/node_modules frontend/build frontend/node_modules
+    
+    # Remove generated files
+    rm -f backend/.env start.sh health-check.sh
+    
+    echo -e "${GREEN}$CHECKMARK Cleanup complete. Run '$0 setup' to reconfigure.${NC}"
+}
+
+# Main command dispatcher
+case "${1:-help}" in
+    "status")
+        cmd_status
+        ;;
+    "start")
+        cmd_start
+        ;;
+    "stop")
+        cmd_stop
+        ;;
+    "restart")
+        cmd_restart
+        ;;
+    "setup")
+        ./setup.sh
+        ;;
+    "demo")
+        ./demo.sh
+        ;;
+    "health")
+        cmd_health
+        ;;
+    "logs")
+        cmd_logs "$2"
+        ;;
+    "metrics")
+        cmd_metrics
+        ;;
+    "submit-metric")
+        cmd_submit_metric
+        ;;
+    "submit-log")
+        cmd_submit_log
+        ;;
+    "clean")
+        cmd_clean
+        ;;
+    "help"|*)
+        print_usage
+        ;;
+esac

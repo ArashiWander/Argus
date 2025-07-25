@@ -2,6 +2,46 @@
 
 A comprehensive, production-ready monitoring and observability platform that provides real-time visibility into distributed systems, applications, and infrastructure through multiple communication protocols.
 
+## 🚀 Quick Start
+
+**New to Argus?** Get up and running in 2 minutes!
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/ArashiWander/Argus.git
+cd Argus
+
+# 2. Run the interactive setup wizard
+./setup.sh
+
+# 3. Start the platform
+./start.sh
+```
+
+That's it! 🎉 Open http://localhost:3000 to access the dashboard.
+
+### ⚡ Even Faster (One Command)
+```bash
+git clone https://github.com/ArashiWander/Argus.git && cd Argus && ./setup.sh && ./start.sh
+```
+
+### 🛠️ Using the CLI Helper
+```bash
+./argus start      # Start the platform
+./argus status     # Check if running
+./argus demo       # Add sample data
+./argus logs       # View recent logs
+./argus help       # See all commands
+```
+
+### 📦 Using npm scripts (alternative)
+```bash
+npm run setup      # Interactive setup wizard
+npm run start      # Start the platform  
+npm run demo       # Generate sample data
+npm run health     # Health check
+```
+
 ## 🚀 Current Status
 
 **Production Ready** - Argus is actively developed with completed core features and advanced capabilities.
@@ -44,15 +84,17 @@ A comprehensive, production-ready monitoring and observability platform that pro
 - **Reverse Proxy**: Nginx for production deployment
 - **Monitoring**: Built-in health checks and metrics
 
-## 📋 Quick Start
+## 🔧 Alternative Setup Methods
 
 ### Prerequisites
 
 - Node.js 18+
-- Docker and Docker Compose
+- Docker and Docker Compose (optional)
 - Git
 
-### Development Setup
+### Manual Development Setup
+
+If you prefer manual setup over the wizard:
 
 1. **Clone and Setup**
    ```bash
@@ -60,27 +102,52 @@ A comprehensive, production-ready monitoring and observability platform that pro
    cd Argus
    ```
 
-2. **Start Full Stack with Databases**
-   ```bash
-   # Start all services including databases
-   docker-compose -f docker-compose.dev.yml up -d
-   ```
-
-3. **Configure Backend**
+2. **Configure Backend**
    ```bash
    cd backend
    npm install
    cp .env.example .env
-   # Edit .env with database URLs (auto-configured for dev stack)
-   npm run dev
+   # Edit .env with your preferred settings
+   npm run build
+   cd ..
    ```
 
-4. **Start Frontend**
+3. **Setup Frontend**
    ```bash
    cd frontend
    npm install
-   npm start
+   cd ..
    ```
+
+4. **Start Services**
+   ```bash
+   # Option 1: Use our enhanced startup script
+   ./start.sh
+   
+   # Option 2: Start manually
+   cd backend && npm run dev &
+   cd frontend && npm start &
+   ```
+
+### 🐳 Docker Setup
+
+```bash
+# Start with databases (recommended)
+docker-compose -f docker-compose.dev.yml up -d
+
+# Or full production stack
+docker-compose up -d --build
+```
+
+### 🏥 Health Check
+
+```bash
+# Check if everything is running
+./health-check.sh
+
+# Or manually
+curl http://localhost:3001/api/health
+```
 
 Access the application:
 - **Frontend**: http://localhost:3000
@@ -304,12 +371,79 @@ The project includes comprehensive migration tools for database updates and conf
 
 See [Migration Scripts Documentation](scripts/README.md) for detailed usage.
 
-## 📚 Documentation
+## 📚 Documentation & Help
 
+### 📖 Getting Started
+- **[Quick Start Guide](#-quick-start)** - Get running in 2 minutes
+- **[Setup Troubleshooting](#-troubleshooting)** - Common issues and solutions
+- **[Development Guide](docs/DEVELOPMENT.md)** - Detailed development setup
+
+### 📋 Technical Documentation  
 - **[Database Setup Guide](docs/DATABASE_SETUP.md)** - Complete database configuration
-- **[Protocol Documentation](docs/PROTOCOLS.md)** - Multi-protocol usage examples  
-- **[Development Guide](docs/DEVELOPMENT.md)** - Development environment setup
+- **[Protocol Documentation](docs/PROTOCOLS.md)** - Multi-protocol usage examples
+- **[API Documentation](docs/api-documentation.yaml)** - OpenAPI specification
 - **[Migration Guide](project_argus_migration.md)** - Migration procedures and best practices
+
+### 🔧 Tools & Scripts
+- `./setup.sh` - Interactive setup wizard with multiple modes
+- `./argus` - **CLI helper for all common tasks**
+- `./start.sh` - Enhanced startup script with better error handling
+- `./health-check.sh` - System health validation and diagnostics
+- `./demo.sh` - Generate realistic sample data with progress indicators
+- `./start-dev.sh` - Original development startup script
+
+## 🆘 Troubleshooting
+
+### Common Issues
+
+**❌ "Node.js version error"**
+```bash
+# Install Node.js 18+ from nodejs.org
+node --version  # Should be 18.0.0 or higher
+```
+
+**❌ "Port already in use"**
+```bash
+# Kill processes using the ports
+lsof -ti:3000,3001 | xargs kill -9
+# Or change ports in backend/.env
+```
+
+**❌ "Backend health check failed"**
+```bash
+# Check backend logs
+cd backend && npm run dev
+# Verify environment configuration
+cat backend/.env
+```
+
+**❌ "Database connection failed"**
+```bash
+# Start database services with Docker
+docker-compose -f docker-compose.dev.yml up -d
+# Or disable external databases (uses in-memory storage)
+# Comment out database URLs in backend/.env
+```
+
+**❌ "Permission denied on scripts"**
+```bash
+chmod +x setup.sh start.sh health-check.sh demo.sh
+```
+
+### Getting Help
+
+1. **Run diagnostics**: `./health-check.sh`
+2. **Check logs**: Look in backend console output
+3. **Verify setup**: Re-run `./setup.sh` and choose "Custom Setup"
+4. **Reset environment**: Delete `backend/.env` and re-run setup
+5. **Create issue**: [GitHub Issues](https://github.com/ArashiWander/Argus/issues) with diagnostic output
+
+### 💡 Pro Tips
+
+- **First time?** Use the setup wizard: `./setup.sh`
+- **Development?** Choose "Developer Mode" in setup for all features
+- **Production?** Use "Production Mode" and configure external databases
+- **Quick test?** Run `./demo.sh` after starting to see sample data
 
 ## 🎯 Roadmap Status
 

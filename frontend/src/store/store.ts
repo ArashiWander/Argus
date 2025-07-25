@@ -1,15 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
-
-// Simple dummy slice for testing
-const dummySlice = {
-  name: 'dummy',
-  initialState: {},
-  reducers: {}
-};
+import metricsSlice from './slices/metricsSlice';
+import logsSlice from './slices/logsSlice';
+import analyticsSlice from './slices/analyticsSlice';
+import securitySlice from './slices/securitySlice';
 
 export const store = configureStore({
   reducer: {
-    dummy: (state = {}) => state,
+    metrics: metricsSlice,
+    logs: logsSlice,
+    analytics: analyticsSlice,
+    security: securitySlice,
   },
 });
 

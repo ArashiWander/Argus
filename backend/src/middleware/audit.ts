@@ -4,7 +4,7 @@ import { AuthenticatedRequest } from './auth';
 import { logger } from '../config/logger';
 
 interface AuditableRequest extends AuthenticatedRequest {
-  originalBody?: any;
+  originalBody?: Record<string, unknown>;
   auditResource?: string;
   auditAction?: string;
 }
@@ -25,7 +25,7 @@ export const auditTrailMiddleware = () => {
     // Capture original res.json method
     const originalJson = res.json;
     
-    res.json = function(body?: any) {
+    res.json = function(body?: unknown) {
       // Log audit trail after successful response
       if (req.auditResource && req.auditAction && req.user) {
         setImmediate(async () => {
@@ -67,7 +67,7 @@ export const logAuthenticationEvent = (action: string) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const originalJson = res.json;
     
-    res.json = function(body?: any) {
+    res.json = function(body?: unknown) {
       setImmediate(async () => {
         try {
           const outcome = res.statusCode >= 200 && res.statusCode < 300 ? 'success' : 'failure';
@@ -105,7 +105,7 @@ export const logAuthorizationEvent = (action: string) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const originalJson = res.json;
     
-    res.json = function(body?: any) {
+    res.json = function(body?: unknown) {
       setImmediate(async () => {
         try {
           const outcome = res.statusCode >= 200 && res.statusCode < 300 ? 'success' : 'failure';
@@ -146,7 +146,7 @@ export const logDataAccessEvent = (resource: string) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const originalJson = res.json;
     
-    res.json = function(body?: any) {
+    res.json = function(body?: unknown) {
       setImmediate(async () => {
         try {
           const outcome = res.statusCode >= 200 && res.statusCode < 300 ? 'success' : 'failure';
@@ -188,7 +188,7 @@ export const logSystemChangeEvent = (resource: string, action: string) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const originalJson = res.json;
     
-    res.json = function(body?: any) {
+    res.json = function(body?: unknown) {
       setImmediate(async () => {
         try {
           const outcome = res.statusCode >= 200 && res.statusCode < 300 ? 'success' : 'failure';
@@ -232,7 +232,7 @@ function getClientIP(req: Request): string {
          'unknown';
 }
 
-function extractResourceId(req: AuditableRequest, responseBody?: any): string | undefined {
+function extractResourceId(req: AuditableRequest, responseBody?: unknown): string | undefined {
   // Try to extract resource ID from URL params
   if (req.params.id) {
     return req.params.id;
@@ -246,7 +246,7 @@ function extractResourceId(req: AuditableRequest, responseBody?: any): string | 
   return undefined;
 }
 
-function extractOldValues(req: AuditableRequest): Record<string, any> | undefined {
+function extractOldValues(req: AuditableRequest): Record<string, unknown> | undefined {
   // In a real implementation, this would fetch the current state before modification
   // For now, we'll just return undefined for new records
   if (req.method === 'POST') {
@@ -257,7 +257,7 @@ function extractOldValues(req: AuditableRequest): Record<string, any> | undefine
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-function extractNewValues(req: AuditableRequest, responseBody?: any): Record<string, any> | undefined {
+function extractNewValues(req: AuditableRequest, responseBody?: unknown): Record<string, unknown> | undefined {
   if (req.method === 'DELETE') {
     return undefined;
   }

@@ -134,10 +134,10 @@ class SecurityService {
             outcome, timestamp, details, risk_score, status, created_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
           [securityEvent.id, securityEvent.event_type, securityEvent.severity,
-           securityEvent.source_ip, securityEvent.user_id, securityEvent.username,
-           securityEvent.resource, securityEvent.action, securityEvent.outcome,
-           securityEvent.timestamp, JSON.stringify(securityEvent.details),
-           securityEvent.risk_score, securityEvent.status, securityEvent.created_at]
+            securityEvent.source_ip, securityEvent.user_id, securityEvent.username,
+            securityEvent.resource, securityEvent.action, securityEvent.outcome,
+            securityEvent.timestamp, JSON.stringify(securityEvent.details),
+            securityEvent.risk_score, securityEvent.status, securityEvent.created_at]
         );
       } catch (error) {
         logger.warn('Failed to store security event in database, using fallback:', error);
@@ -178,14 +178,14 @@ class SecurityService {
   private async evaluateRule(rule: ThreatDetectionRule, newEvent?: SecurityEvent): Promise<SecurityAlert | null> {
     try {
       switch (rule.rule_type) {
-        case 'threshold':
-          return await this.evaluateThresholdRule(rule, newEvent);
-        case 'pattern':
-          return await this.evaluatePatternRule(rule, newEvent);
-        case 'correlation':
-          return await this.evaluateCorrelationRule(rule, newEvent);
-        default:
-          return null;
+      case 'threshold':
+        return await this.evaluateThresholdRule(rule, newEvent);
+      case 'pattern':
+        return await this.evaluatePatternRule(rule, newEvent);
+      case 'correlation':
+        return await this.evaluateCorrelationRule(rule, newEvent);
+      default:
+        return null;
       }
     } catch (error) {
       logger.error(`Failed to evaluate rule ${rule.name}:`, error);
@@ -294,10 +294,10 @@ class SecurityService {
             new_values, ip_address, user_agent, timestamp, outcome, details)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
           [auditEntry.id, auditEntry.user_id, auditEntry.username, auditEntry.action,
-           auditEntry.resource, auditEntry.resource_id, JSON.stringify(auditEntry.old_values),
-           JSON.stringify(auditEntry.new_values), auditEntry.ip_address,
-           auditEntry.user_agent, auditEntry.timestamp, auditEntry.outcome,
-           JSON.stringify(auditEntry.details)]
+            auditEntry.resource, auditEntry.resource_id, JSON.stringify(auditEntry.old_values),
+            JSON.stringify(auditEntry.new_values), auditEntry.ip_address,
+            auditEntry.user_agent, auditEntry.timestamp, auditEntry.outcome,
+            JSON.stringify(auditEntry.details)]
         );
       } catch (error) {
         logger.warn('Failed to store audit trail in database, using fallback:', error);
@@ -342,33 +342,33 @@ class SecurityService {
     const findings: ComplianceReport['findings'] = [];
 
     switch (framework) {
-      case 'SOX':
-        findings.push(
-          await this.checkAccessControlCompliance(startDate, endDate),
-          await this.checkAuditTrailCompliance(startDate, endDate),
-          await this.checkDataIntegrityCompliance(startDate, endDate)
-        );
-        break;
-      case 'GDPR':
-        findings.push(
-          await this.checkDataProtectionCompliance(startDate, endDate),
-          await this.checkConsentManagementCompliance(startDate, endDate),
-          await this.checkBreachNotificationCompliance(startDate, endDate)
-        );
-        break;
-      case 'SOC2':
-        findings.push(
-          await this.checkSecurityMonitoringCompliance(startDate, endDate),
-          await this.checkIncidentResponseCompliance(startDate, endDate),
-          await this.checkAccessManagementCompliance(startDate, endDate)
-        );
-        break;
-      default:
-        findings.push({
-          requirement: 'General Security Monitoring',
-          status: 'compliant',
-          evidence: ['Security monitoring system is active'],
-        });
+    case 'SOX':
+      findings.push(
+        await this.checkAccessControlCompliance(startDate, endDate),
+        await this.checkAuditTrailCompliance(startDate, endDate),
+        await this.checkDataIntegrityCompliance(startDate, endDate)
+      );
+      break;
+    case 'GDPR':
+      findings.push(
+        await this.checkDataProtectionCompliance(startDate, endDate),
+        await this.checkConsentManagementCompliance(startDate, endDate),
+        await this.checkBreachNotificationCompliance(startDate, endDate)
+      );
+      break;
+    case 'SOC2':
+      findings.push(
+        await this.checkSecurityMonitoringCompliance(startDate, endDate),
+        await this.checkIncidentResponseCompliance(startDate, endDate),
+        await this.checkAccessManagementCompliance(startDate, endDate)
+      );
+      break;
+    default:
+      findings.push({
+        requirement: 'General Security Monitoring',
+        status: 'compliant',
+        evidence: ['Security monitoring system is active'],
+      });
     }
 
     return findings;
@@ -628,9 +628,9 @@ class SecurityService {
             affected_assets, risk_score, status, created_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
           [alert.id, alert.rule_id, alert.rule_name, JSON.stringify(alert.event_ids),
-           alert.threat_type, alert.severity, alert.description,
-           JSON.stringify(alert.affected_assets), alert.risk_score, alert.status,
-           alert.created_at]
+            alert.threat_type, alert.severity, alert.description,
+            JSON.stringify(alert.affected_assets), alert.risk_score, alert.status,
+            alert.created_at]
         );
       } catch (error) {
         logger.warn('Failed to store security alert in database, using fallback:', error);

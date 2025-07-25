@@ -274,21 +274,21 @@ router.post('/channels', authenticateToken, async (req: AuthenticatedRequest, re
 
     // Validate config based on type
     switch (type) {
-      case 'email':
-        if (!config.recipients || !Array.isArray(config.recipients) || config.recipients.length === 0) {
-          return res.status(400).json({ error: 'Email config must include recipients array' });
-        }
-        break;
-      case 'webhook':
-        if (!config.url) {
-          return res.status(400).json({ error: 'Webhook config must include url' });
-        }
-        break;
-      case 'slack':
-        if (!config.webhook_url) {
-          return res.status(400).json({ error: 'Slack config must include webhook_url' });
-        }
-        break;
+    case 'email':
+      if (!config.recipients || !Array.isArray(config.recipients) || config.recipients.length === 0) {
+        return res.status(400).json({ error: 'Email config must include recipients array' });
+      }
+      break;
+    case 'webhook':
+      if (!config.url) {
+        return res.status(400).json({ error: 'Webhook config must include url' });
+      }
+      break;
+    case 'slack':
+      if (!config.webhook_url) {
+        return res.status(400).json({ error: 'Slack config must include webhook_url' });
+      }
+      break;
     }
 
     const channelData: CreateNotificationChannelData = {

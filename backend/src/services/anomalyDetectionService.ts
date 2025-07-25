@@ -238,38 +238,38 @@ class AnomalyDetectionService {
       let anomaly: Anomaly | null = null;
 
       switch (config.algorithm) {
-        case 'zscore':
-          anomaly = this.detectZScoreAnomaly(
-            config, 
-            values, 
-            latestValue, 
-            latestTimestamp
-          );
-          break;
-        case 'iqr':
-          anomaly = this.detectIQRAnomaly(
-            config, 
-            values, 
-            latestValue, 
-            latestTimestamp
-          );
-          break;
-        case 'moving_average':
-          anomaly = this.detectMovingAverageAnomaly(
-            config, 
-            values, 
-            latestValue, 
-            latestTimestamp
-          );
-          break;
-        case 'seasonal':
-          anomaly = this.detectSeasonalAnomaly(
-            config, 
-            values, 
-            latestValue, 
-            latestTimestamp
-          );
-          break;
+      case 'zscore':
+        anomaly = this.detectZScoreAnomaly(
+          config, 
+          values, 
+          latestValue, 
+          latestTimestamp
+        );
+        break;
+      case 'iqr':
+        anomaly = this.detectIQRAnomaly(
+          config, 
+          values, 
+          latestValue, 
+          latestTimestamp
+        );
+        break;
+      case 'moving_average':
+        anomaly = this.detectMovingAverageAnomaly(
+          config, 
+          values, 
+          latestValue, 
+          latestTimestamp
+        );
+        break;
+      case 'seasonal':
+        anomaly = this.detectSeasonalAnomaly(
+          config, 
+          values, 
+          latestValue, 
+          latestTimestamp
+        );
+        break;
       }
 
       return anomaly ? [anomaly] : [];

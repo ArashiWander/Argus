@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-import { Box, CircularProgress, Container } from '@mui/material';
+import { Box, CircularProgress, Container, ThemeProvider, CssBaseline } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider, useCommonNotifications } from './components/NotificationSystem';
@@ -12,11 +13,9 @@ import Logs from './pages/Logs';
 import Alerts from './pages/Alerts';
 import Analytics from './pages/Analytics';
 import Security from './pages/Security';
-import Tracing from './pages/Tracing';
 import Auth from './pages/Auth';
 import HelpSystem from './components/HelpSystem';
 import WelcomeExperience from './components/WelcomeExperience';
-import LoadingState from './components/LoadingState';
 
 // Enhanced theme with better accessibility
 const theme = createTheme({
@@ -47,7 +46,7 @@ const theme = createTheme({
 });
 
 const AppContent: React.FC = () => {
-  const { loading, isAuthenticated } = useAuth();
+  const { loading } = useAuth();
   const { notifyFirstRun } = useCommonNotifications();
   const [showWelcome, setShowWelcome] = useState(false);
   const [showTour, setShowTour] = useState(false);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Grid,
   Typography,
@@ -33,7 +33,7 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { notifyConnectionError, notifyPlatformStatus } = useCommonNotifications();
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -62,7 +62,7 @@ const Dashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notifyConnectionError, notifyPlatformStatus]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -70,7 +70,7 @@ const Dashboard: React.FC = () => {
     // Refresh data every 30 seconds
     const interval = setInterval(fetchDashboardData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchDashboardData]);
 
   if (loading) {
     return <DashboardSkeleton />;

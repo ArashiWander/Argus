@@ -11,8 +11,6 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  Fade,
-
 } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { 
@@ -22,19 +20,21 @@ import {
   LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
   MoreVert as MoreVertIcon,
-
+  Dashboard as DashboardIcon,
+  BarChart as MetricsIcon,
+  ViewList as LogsIcon,
+  Notifications as AlertsIcon,
+  Analytics as AnalyticsIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme as useCustomTheme } from '../contexts/ThemeContext';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
-  const { mode, toggleMode } = useTheme();
+  const { mode, toggleMode } = useCustomTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const navItems = [
 
@@ -275,8 +275,8 @@ const Navbar: React.FC = () => {
           </IconButton>
 
         </Box>
-      </Drawer>
-    </>
+      </Toolbar>
+    </AppBar>
   );
 };
 

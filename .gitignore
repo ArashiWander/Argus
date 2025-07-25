@@ -45,3 +45,11 @@ coverage/
 # Temporary files
 tmp/
 temp/
+
+# Migration and backup files
+backups/
+config_backups/
+migration.log
+validation_report_*.txt
+*.backup
+*.dump

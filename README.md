@@ -95,6 +95,18 @@ KAFKA_ENABLED=true
 KAFKA_BROKERS=localhost:9092
 ```
 
+## Documentation
+
+### Core Documentation
+- [Database Setup Guide](docs/DATABASE_SETUP.md) - Complete database configuration guide
+- [Protocol Documentation](docs/PROTOCOLS.md) - Multi-protocol usage examples
+- [Development Guide](docs/DEVELOPMENT.md) - Development environment setup
+- [Project Blueprint](project_argus_blueprint.md) - Complete roadmap and specifications
+
+### Migration and Upgrade
+- [Migration Guide](project_argus_migration.md) - Comprehensive migration procedures
+- [Migration Scripts](scripts/README.md) - Automated migration utilities
+
 For complete multi-protocol setup with all dependencies:
 
 ```bash

@@ -45,6 +45,9 @@ interface GrpcHealthCheckRequest {
   service?: string;
 }
 
+// Note: gRPC protobuf generated types are complex to type properly
+// Using any for proto service definitions is acceptable practice
+
 // Load proto definition
 const PROTO_PATH = resolve(__dirname, '../../proto/argus.proto');
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
@@ -55,6 +58,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   oneofs: true,
 });
 
+// Load proto definition - using any for proto generated types which are complex to type
 const argusProto = grpc.loadPackageDefinition(packageDefinition) as any;
 
 export class GrpcServer {

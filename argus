@@ -31,7 +31,13 @@ API_URL="$BASE_URL/api"
 print_usage() {
     echo -e "${PURPLE}${BOLD}Argus Platform CLI Helper${NC}\n"
     echo -e "${CYAN}Usage: $0 <command> [options]${NC}\n"
-    echo -e "${YELLOW}${BOLD}Available Commands:${NC}"
+    echo -e "${YELLOW}${BOLD}🚀 Quick Commands (Most Used):${NC}"
+    echo -e "  ${GREEN}status${NC}          - Check platform status and health"
+    echo -e "  ${GREEN}start${NC}           - Start the platform"
+    echo -e "  ${GREEN}demo${NC}            - Generate sample data to explore"
+    echo -e "  ${GREEN}logs error${NC}      - View error logs quickly"
+    echo ""
+    echo -e "${YELLOW}${BOLD}📋 All Available Commands:${NC}"
     echo -e "  ${GREEN}status${NC}          - Check platform status and health"
     echo -e "  ${GREEN}start${NC}           - Start the platform"
     echo -e "  ${GREEN}stop${NC}            - Stop the platform"
@@ -46,11 +52,22 @@ print_usage() {
     echo -e "  ${GREEN}clean${NC}           - Clean build files and reset"
     echo -e "  ${GREEN}help${NC}            - Show this help message"
     echo ""
-    echo -e "${CYAN}${BOLD}Examples:${NC}"
+    echo -e "${CYAN}${BOLD}💡 Examples:${NC}"
     echo -e "  $0 start              # Start the platform"
     echo -e "  $0 logs error         # View error logs"
     echo -e "  $0 submit-metric      # Interactive metric submission"
     echo -e "  $0 status             # Check if everything is running"
+    echo ""
+    echo -e "${BLUE}${BOLD}🎯 New User? Try these commands in order:${NC}"
+    echo -e "  1. ${CYAN}$0 status${NC}       # Check if platform is running"
+    echo -e "  2. ${CYAN}$0 demo${NC}         # Generate sample data"
+    echo -e "  3. ${CYAN}Open http://localhost:3000${NC}  # View dashboard"
+    echo -e "  4. ${CYAN}$0 help${NC}         # Learn more commands"
+    echo ""
+    echo -e "${PURPLE}${BOLD}🆘 Need Help?${NC}"
+    echo -e "  • Check the web interface help button (?) for guided tour"
+    echo -e "  • Run ${CYAN}./health-check.sh${NC} for detailed diagnostics"
+    echo -e "  • View ${CYAN}GETTING_STARTED.md${NC} for step-by-step guide"
     echo ""
 }
 
@@ -86,6 +103,8 @@ print_status() {
 }
 
 cmd_status() {
+    echo -e "${BLUE}${BOLD}$COMPUTER Argus Platform Status Check${NC}\n"
+    
     print_status
     
     if check_backend; then
@@ -93,6 +112,15 @@ cmd_status() {
         echo -e "  Frontend:  ${CYAN}http://localhost:3000${NC}"
         echo -e "  Backend:   ${CYAN}http://localhost:3001${NC}"
         echo -e "  Health:    ${CYAN}http://localhost:3001/api/health${NC}"
+        echo ""
+        echo -e "${GREEN}$CHECKMARK All systems operational!${NC}"
+        echo -e "${CYAN}💡 Tip: Visit the frontend URL to access the enhanced web interface${NC}"
+    else
+        echo -e "\n${YELLOW}⚠️  Platform not fully running${NC}"
+        echo -e "${CYAN}💡 Quick fixes to try:${NC}"
+        echo -e "  • Run: ${BOLD}$0 start${NC} to start the platform"
+        echo -e "  • Run: ${BOLD}$0 health${NC} for detailed diagnostics"
+        echo -e "  • Check: ${BOLD}./health-check.sh${NC} for troubleshooting"
     fi
 }
 
@@ -101,13 +129,29 @@ cmd_start() {
     
     if [ ! -f "backend/.env" ]; then
         echo -e "${YELLOW}⚠️  No environment file found. Running setup first...${NC}"
+        echo -e "${CYAN}💡 This will guide you through the initial configuration${NC}"
         ./setup.sh
     fi
     
     if [ -f "start.sh" ]; then
+        echo -e "${CYAN}🎯 Starting platform components...${NC}"
         ./start.sh
+        
+        # Give it a moment to start up
+        sleep 3
+        
+        # Check if it started successfully
+        if check_backend; then
+            echo -e "\n${GREEN}$CHECKMARK Platform started successfully!${NC}"
+            echo -e "${CYAN}🌐 Access your dashboard at: ${BOLD}http://localhost:3000${NC}"
+            echo -e "${CYAN}💡 First time? Look for the welcome dialog and help button (?)${NC}"
+        else
+            echo -e "\n${YELLOW}⚠️  Platform may still be starting up...${NC}"
+            echo -e "${CYAN}💡 Run '${BOLD}$0 status${NC}' in a few moments to check${NC}"
+        fi
     else
         echo -e "${RED}$CROSS start.sh not found. Please run setup first.${NC}"
+        echo -e "${CYAN}💡 Run: ${BOLD}$0 setup${NC} to configure the platform${NC}"
         exit 1
     fi
 }

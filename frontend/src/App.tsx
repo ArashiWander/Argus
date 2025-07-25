@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { NotificationProvider, useCommonNotifications } from './components/NotificationSystem';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import Metrics from './pages/Metrics';
@@ -11,20 +12,76 @@ import Analytics from './pages/Analytics';
 import Security from './pages/Security';
 import Tracing from './pages/Tracing';
 import Auth from './pages/Auth';
+import HelpSystem from './components/HelpSystem';
+import WelcomeExperience from './components/WelcomeExperience';
+import LoadingState from './components/LoadingState';
+
+// Enhanced theme with better accessibility
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          textTransform: 'none', // More readable button text
+        },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          fontSize: '0.875rem', // Better readability
+        },
+      },
+    },
+  },
+});
 
 const AppContent: React.FC = () => {
-  const { loading } = useAuth();
+  const { loading, isAuthenticated } = useAuth();
+  const { notifyFirstRun } = useCommonNotifications();
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+
+  useEffect(() => {
+    // Check if this is the user's first visit
+    const hasSeenWelcome = localStorage.getItem('argus-welcome-seen');
+    
+    if (!hasSeenWelcome && !loading) {
+      setShowWelcome(true);
+      localStorage.setItem('argus-welcome-seen', 'true');
+      notifyFirstRun();
+    }
+  }, [loading, notifyFirstRun]);
+
+  const handleWelcomeClose = () => {
+    setShowWelcome(false);
+  };
+
+  const handleStartTour = () => {
+    setShowTour(true);
+  };
+
+  const handleTourComplete = () => {
+    setShowTour(false);
+  };
 
   if (loading) {
     return (
-      <Box 
-        display="flex" 
-        justifyContent="center" 
-        alignItems="center" 
-        height="100vh"
-      >
-        <CircularProgress />
-      </Box>
+      <LoadingState 
+        type="circular"
+        context="general"
+        size="large"
+        message="Initializing Argus Platform..."
+        showTips={true}
+      />
     );
   }
 
@@ -43,17 +100,31 @@ const AppContent: React.FC = () => {
           <Route path="/auth" element={<Auth />} />
         </Routes>
       </Box>
+
+      {/* User Experience Enhancements */}
+      <HelpSystem showTour={showTour} onTourComplete={handleTourComplete} />
+      
+      <WelcomeExperience
+        open={showWelcome}
+        onClose={handleWelcomeClose}
+        onStartTour={handleStartTour}
+      />
     </Box>
   );
 };
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <NotificationProvider>
+        <AuthProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </AuthProvider>
+      </NotificationProvider>
+    </ThemeProvider>
   );
 }
 

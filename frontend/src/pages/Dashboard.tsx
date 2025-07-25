@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   Grid,
-  Card,
-  CardContent,
   Typography,
   Box,
-  Chip,
   Alert,
-  CircularProgress,
+  Fade,
+  Chip,
 } from '@mui/material';
 import { 
   Speed as SpeedIcon,
@@ -15,10 +13,13 @@ import {
   Timeline as TimelineIcon,
   BugReport as BugReportIcon,
   Notifications as NotificationsIcon,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import { healthApi, metricsApi, logsApi, alertsApi } from '../services/api';
 import { HealthStatus } from '../types';
 import { MetricsChart, LogsChart } from '../components/Charts';
+import { StatCard, MetricCard, StatusCard } from '../components/ui/Cards';
+import { DashboardSkeleton } from '../components/ui/Skeletons';
 
 const Dashboard: React.FC = () => {
   const [health, setHealth] = useState<HealthStatus | null>(null);
@@ -60,18 +61,26 @@ const Dashboard: React.FC = () => {
   }, []);
 
   if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="400px">
-        <CircularProgress />
-      </Box>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mb: 2 }}>
-        {error}
-      </Alert>
+      <Fade in>
+        <Alert 
+          severity="error" 
+          sx={{ 
+            mb: 4,
+            borderRadius: 3,
+            '& .MuiAlert-message': {
+              fontSize: '0.9rem',
+              fontWeight: 500,
+            },
+          }}
+        >
+          {error}
+        </Alert>
+      </Fade>
     );
   }
 
@@ -89,250 +98,314 @@ const Dashboard: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Argus Dashboard
-      </Typography>
-      
-      <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-        Real-time monitoring and observability platform
-      </Typography>
+      {/* Header Section */}
+      <Fade in timeout={300}>
+        <Box mb={5}>
+          <Typography 
+            variant="h3" 
+            component="h1" 
+            gutterBottom
+            sx={{
+              fontWeight: 700,
+              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              color: 'transparent',
+              mb: 1,
+            }}
+          >
+            Dashboard
+          </Typography>
+          <Typography 
+            variant="h6" 
+            color="text.secondary" 
+            sx={{ 
+              fontWeight: 400,
+              fontSize: '1.1rem',
+              mb: 3,
+            }}
+          >
+            Real-time monitoring and observability platform
+          </Typography>
+          
+          {/* Status Pills */}
+          <Box display="flex" gap={2} flexWrap="wrap">
+            <Chip
+              icon={<SpeedIcon />}
+              label={health ? `System ${health.message}` : 'System Status'}
+              color={health ? getStatusColor(health.message) : 'default'}
+              variant="outlined"
+              sx={{ fontWeight: 500 }}
+            />
+            <Chip
+              icon={<StorageIcon />}
+              label={`${metricsStats?.total_metrics || 0} Metrics`}
+              variant="outlined"
+              sx={{ fontWeight: 500 }}
+            />
+            <Chip
+              icon={<BugReportIcon />}
+              label={`${logsStats?.total_logs || 0} Log Entries`}
+              variant="outlined"
+              sx={{ fontWeight: 500 }}
+            />
+          </Box>
+        </Box>
+      </Fade>
 
-      <Grid container spacing={3} sx={{ mt: 2 }}>
-        {/* System Health */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <SpeedIcon color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6">System Health</Typography>
-              </Box>
-              {health && (
-                <>
-                  <Chip 
-                    label={health.message} 
-                    color={getStatusColor(health.message)}
-                    sx={{ mb: 1 }}
-                  />
-                  <Typography variant="body2" color="text.secondary">
-                    Uptime: {Math.floor(health.uptime / 3600)}h {Math.floor((health.uptime % 3600) / 60)}m
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Version: {health.version}
-                  </Typography>
-                </>
-              )}
-            </CardContent>
-          </Card>
+      <Grid container spacing={4}>
+        {/* Key Metrics Row */}
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="System Health"
+            value={health?.message || 'Unknown'}
+            subtitle={health ? `Uptime: ${Math.floor(health.uptime / 3600)}h ${Math.floor((health.uptime % 3600) / 60)}m` : ''}
+            icon={SpeedIcon}
+            color="primary"
+            delay={0}
+          />
         </Grid>
 
-        {/* Metrics Stats */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <TimelineIcon color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Metrics</Typography>
-              </Box>
-              {metricsStats && (
-                <>
-                  <Typography variant="h4" color="primary">
-                    {metricsStats.total_metrics}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total metrics collected
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Services: {metricsStats.unique_services}
-                  </Typography>
-                </>
-              )}
-            </CardContent>
-          </Card>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Total Metrics"
+            value={metricsStats?.total_metrics || 0}
+            subtitle={`${metricsStats?.unique_services || 0} services monitored`}
+            icon={TimelineIcon}
+            color="info"
+            trend={{ value: 12, isPositive: true }}
+            delay={1}
+          />
         </Grid>
 
-        {/* Logs Stats */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <StorageIcon color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Logs</Typography>
-              </Box>
-              {logsStats && (
-                <>
-                  <Typography variant="h4" color="primary">
-                    {logsStats.total_logs}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total log entries
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Services: {logsStats.unique_services}
-                  </Typography>
-                </>
-              )}
-            </CardContent>
-          </Card>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Log Entries"
+            value={logsStats?.total_logs || 0}
+            subtitle={`${logsStats?.unique_services || 0} services logging`}
+            icon={StorageIcon}
+            color="success"
+            trend={{ value: 8, isPositive: true }}
+            delay={2}
+          />
         </Grid>
 
-        {/* Services Status */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <BugReportIcon color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Services</Typography>
-              </Box>
-              {health && (
-                <Box>
-                  {Object.entries(health.services).map(([service, status]) => (
-                    <Box key={service} display="flex" justifyContent="space-between" mb={1}>
-                      <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>
-                        {service}:
-                      </Typography>
-                      <Chip 
-                        label={status} 
-                        size="small"
-                        color={getStatusColor(status)}
-                      />
-                    </Box>
-                  ))}
-                </Box>
-              )}
-            </CardContent>
-          </Card>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Active Alerts"
+            value={alertStats?.active_alerts || 0}
+            subtitle={`${alertStats?.enabled_rules || 0} rules configured`}
+            icon={NotificationsIcon}
+            color={alertStats?.active_alerts > 0 ? 'error' : 'success'}
+            delay={3}
+          />
         </Grid>
 
-        {/* Alert Stats */}
-        <Grid item xs={12} md={6} lg={3}>
-          <Card>
-            <CardContent>
-              <Box display="flex" alignItems="center" mb={2}>
-                <NotificationsIcon color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Alerts</Typography>
-              </Box>
-              {alertStats && (
-                <>
-                  <Typography variant="h4" color={alertStats.active_alerts > 0 ? 'error' : 'primary'}>
-                    {alertStats.active_alerts || 0}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Active alerts
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Rules: {alertStats.enabled_rules || 0}
-                  </Typography>
-                </>
-              )}
-              {!alertStats && (
-                <>
-                  <Typography variant="h4" color="primary">
-                    0
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Active alerts
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Alert system ready
-                  </Typography>
-                </>
-              )}
-            </CardContent>
-          </Card>
+        <Grid item xs={12} sm={6} md={4}>
+          <StatusCard
+            title="Services Status"
+            status={health?.message === 'healthy' ? 'healthy' : 'warning'}
+            message={health?.message}
+            details={health ? Object.entries(health.services).map(([service, status]) => ({
+              label: service.charAt(0).toUpperCase() + service.slice(1),
+              value: status as string,
+              status: status as string,
+            })) : []}
+            delay={4}
+          />
         </Grid>
 
-        {/* Metrics Visualization */}
+        <Grid item xs={12} sm={6} md={4}>
+          <StatCard
+            title="Security Events"
+            value="0"
+            subtitle="No threats detected"
+            icon={SecurityIcon}
+            color="success"
+            delay={5}
+          />
+        </Grid>
+
+        {/* Charts Section */}
         <Grid item xs={12}>
-          <MetricsChart />
+          <MetricCard
+            title="Real-time Metrics"
+            delay={6}
+            action={
+              <Chip
+                label="Live"
+                color="success"
+                size="small"
+                sx={{ fontWeight: 600 }}
+              />
+            }
+          >
+            <MetricsChart />
+          </MetricCard>
         </Grid>
 
-        {/* Log Analysis */}
         <Grid item xs={12} lg={6}>
-          <LogsChart />
+          <MetricCard
+            title="Log Analysis"
+            delay={7}
+          >
+            <LogsChart />
+          </MetricCard>
         </Grid>
 
         {/* Log Level Distribution */}
         {logsStats && logsStats.level_distribution && (
           <Grid item xs={12} lg={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Log Level Summary
-                </Typography>
-                <Grid container spacing={2}>
-                  {Object.entries(logsStats.level_distribution).map(([level, count]) => (
-                    <Grid item xs={6} sm={3} key={level}>
-                      <Box textAlign="center">
-                        <Typography variant="h5" color="primary">
-                          {count as number}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'uppercase' }}>
-                          {level}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
-              </CardContent>
-            </Card>
+            <MetricCard
+              title="Log Level Distribution"
+              delay={8}
+            >
+              <Grid container spacing={3}>
+                {Object.entries(logsStats.level_distribution).map(([level, count]) => (
+                  <Grid item xs={6} sm={3} key={level}>
+                    <Box textAlign="center">
+                      <Typography 
+                        variant="h4" 
+                        color={
+                          level === 'error' ? 'error.main' :
+                          level === 'warn' ? 'warning.main' :
+                          level === 'info' ? 'info.main' : 'success.main'
+                        }
+                        fontWeight={700}
+                      >
+                        {count as number}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ 
+                          textTransform: 'uppercase',
+                          fontWeight: 500,
+                          fontSize: '0.75rem',
+                          letterSpacing: '0.5px',
+                        }}
+                      >
+                        {level}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </MetricCard>
           </Grid>
         )}
 
         {/* Alert Statistics */}
         {alertStats && alertStats.alerts_by_severity && (
           <Grid item xs={12} lg={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Alert Severity Summary
-                </Typography>
-                <Grid container spacing={2}>
-                  {Object.entries(alertStats.alerts_by_severity).map(([severity, count]) => (
-                    <Grid item xs={6} sm={3} key={severity}>
-                      <Box textAlign="center">
-                        <Typography variant="h5" color={
+            <MetricCard
+              title="Alert Severity Breakdown"
+              delay={9}
+            >
+              <Grid container spacing={3}>
+                {Object.entries(alertStats.alerts_by_severity).map(([severity, count]) => (
+                  <Grid item xs={6} sm={3} key={severity}>
+                    <Box textAlign="center">
+                      <Typography 
+                        variant="h4" 
+                        color={
                           severity === 'critical' ? 'error.main' : 
                           severity === 'high' ? 'warning.main' : 
                           severity === 'medium' ? 'info.main' : 'success.main'
-                        }>
-                          {count as number}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'uppercase' }}>
-                          {severity}
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  ))}
-                </Grid>
-              </CardContent>
-            </Card>
+                        }
+                        fontWeight={700}
+                      >
+                        {count as number}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary" 
+                        sx={{ 
+                          textTransform: 'uppercase',
+                          fontWeight: 500,
+                          fontSize: '0.75rem',
+                          letterSpacing: '0.5px',
+                        }}
+                      >
+                        {severity}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </MetricCard>
           </Grid>
         )}
 
         {/* Quick Actions */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Quick Actions
+        <Grid item xs={12} lg={6}>
+          <MetricCard
+            title="Quick Actions"
+            delay={10}
+          >
+            <Box sx={{ '& > *': { mb: 1.5 } }}>
+              <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box 
+                  sx={{ 
+                    width: 6, 
+                    height: 6, 
+                    borderRadius: '50%', 
+                    bgcolor: 'primary.main', 
+                    mr: 2 
+                  }} 
+                />
+                View real-time metrics in the Metrics tab
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                • View real-time metrics in the Metrics tab
+              <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box 
+                  sx={{ 
+                    width: 6, 
+                    height: 6, 
+                    borderRadius: '50%', 
+                    bgcolor: 'info.main', 
+                    mr: 2 
+                  }} 
+                />
+                Search and filter logs in the Logs tab
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                • Search and filter logs in the Logs tab
+              <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box 
+                  sx={{ 
+                    width: 6, 
+                    height: 6, 
+                    borderRadius: '50%', 
+                    bgcolor: 'warning.main', 
+                    mr: 2 
+                  }} 
+                />
+                Manage alerts and alert rules in the Alerts tab
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                • Manage alerts and alert rules in the Alerts tab
+              <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box 
+                  sx={{ 
+                    width: 6, 
+                    height: 6, 
+                    borderRadius: '50%', 
+                    bgcolor: 'success.main', 
+                    mr: 2 
+                  }} 
+                />
+                Submit custom metrics via API
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                • Submit custom metrics via API
+              <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box 
+                  sx={{ 
+                    width: 6, 
+                    height: 6, 
+                    borderRadius: '50%', 
+                    bgcolor: 'secondary.main', 
+                    mr: 2 
+                  }} 
+                />
+                Configure notification channels for alerts
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                • Configure notification channels for alerts
-              </Typography>
-            </CardContent>
-          </Card>
+            </Box>
+          </MetricCard>
         </Grid>
       </Grid>
     </Box>

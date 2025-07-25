@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, Container } from '@mui/material';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
@@ -21,25 +21,47 @@ const AppContent: React.FC = () => {
         justifyContent="center" 
         alignItems="center" 
         height="100vh"
+        sx={{
+          background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+        }}
       >
-        <CircularProgress />
+        <Box textAlign="center">
+          <CircularProgress size={48} thickness={4} />
+          <Box mt={2} color="text.secondary" fontSize="0.875rem" fontWeight={500}>
+            Loading Argus Platform...
+          </Box>
+        </Box>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
+    <Box sx={{ 
+      minHeight: '100vh',
+      backgroundColor: 'background.default',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       <Navbar />
-      <Box component="main" sx={{ p: 3 }}>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/metrics" element={<Metrics />} />
-          <Route path="/logs" element={<Logs />} />
-          <Route path="/alerts" element={<Alerts />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/security" element={<Security />} />
-          <Route path="/auth" element={<Auth />} />
-        </Routes>
+      <Box 
+        component="main" 
+        sx={{ 
+          flex: 1,
+          py: 4,
+          px: { xs: 2, sm: 3, md: 4 },
+        }}
+      >
+        <Container maxWidth="xl" sx={{ px: { xs: 0, sm: 2 } }}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/metrics" element={<Metrics />} />
+            <Route path="/logs" element={<Logs />} />
+            <Route path="/alerts" element={<Alerts />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/security" element={<Security />} />
+            <Route path="/auth" element={<Auth />} />
+          </Routes>
+        </Container>
       </Box>
     </Box>
   );

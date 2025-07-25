@@ -75,8 +75,8 @@ class AuthService {
         const user = result.rows[0];
         logger.info(`User created: ${username} (${email})`);
         return user;
-      } catch (error: any) {
-        if (error.code === '23505') { // Unique violation
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'code' in error && error.code === '23505') { // Unique violation
           throw new Error('Username or email already exists');
         }
         throw new Error('Failed to create user');
@@ -219,9 +219,10 @@ class AuthService {
     }
   }
 
-  verifyToken(token: string): any {
+  verifyToken(token: string): { userId: number; username: string; email: string; role: string } {
     try {
-      return jwt.verify(token, this.jwtSecret);
+      const decoded = jwt.verify(token, this.jwtSecret);
+      return decoded as { userId: number; username: string; email: string; role: string };
     } catch (error) {
       throw new Error('Invalid or expired token');
     }

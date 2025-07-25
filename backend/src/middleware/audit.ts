@@ -9,6 +9,20 @@ interface AuditableRequest extends AuthenticatedRequest {
   auditAction?: string;
 }
 
+interface AuditableResponseBody {
+  count?: number;
+  length?: number;
+  id?: string;
+  user?: { id?: string };
+  rule?: { id?: string };
+  alert?: { id?: string };
+}
+
+interface CountableBody {
+  count?: number;
+  length?: number;
+}
+
 // Middleware to capture request body for audit
 export const captureAuditData = (resource: string, action: string) => {
   return (req: AuditableRequest, res: Response, next: NextFunction) => {
@@ -168,7 +182,7 @@ export const logDataAccessEvent = (resource: string) => {
               user_agent: req.get('User-Agent'),
               status_code: res.statusCode,
               query_params: req.query,
-              data_count: body?.count || body?.length || 1,
+              data_count: getDataCount(body),
             },
           });
         } catch (error) {
@@ -232,6 +246,14 @@ function getClientIP(req: Request): string {
          'unknown';
 }
 
+function getDataCount(body: unknown): number {
+  if (body && typeof body === 'object') {
+    const countableBody = body as CountableBody;
+    return countableBody.count || countableBody.length || 1;
+  }
+  return 1;
+}
+
 function extractResourceId(req: AuditableRequest, responseBody?: unknown): string | undefined {
   // Try to extract resource ID from URL params
   if (req.params.id) {
@@ -240,7 +262,8 @@ function extractResourceId(req: AuditableRequest, responseBody?: unknown): strin
   
   // Try to extract from response body
   if (responseBody && typeof responseBody === 'object') {
-    return responseBody.id || responseBody.user?.id || responseBody.rule?.id || responseBody.alert?.id;
+    const auditableBody = responseBody as AuditableResponseBody;
+    return auditableBody.id || auditableBody.user?.id || auditableBody.rule?.id || auditableBody.alert?.id;
   }
   
   return undefined;

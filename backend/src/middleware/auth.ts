@@ -9,6 +9,7 @@ export interface AuthenticatedRequest extends Request {
     email: string;
     role: string;
   };
+  requiredRole?: string;
 }
 
 export const authenticateToken = async (
@@ -32,7 +33,7 @@ export const authenticateToken = async (
     await authService.updateUserLastLogin(decoded.userId);
 
     next();
-  } catch (error: any) {
+  } catch (error: unknown) {
     logger.error('Token verification failed:', error);
     res.status(403).json({ error: 'Invalid or expired token' });
   }
@@ -48,7 +49,7 @@ export const requireRole = (roles: string | string[]) => {
     const allowedRoles = Array.isArray(roles) ? roles : [roles];
     
     // Store required role for audit logging
-    (req as any).requiredRole = allowedRoles.join(',');
+    req.requiredRole = allowedRoles.join(',');
     
     if (!allowedRoles.includes(req.user.role)) {
       res.status(403).json({ 

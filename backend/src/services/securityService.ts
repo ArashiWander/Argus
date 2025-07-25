@@ -704,7 +704,7 @@ class SecurityService {
     };
   }
 
-  private async checkBreachNotificationCompliance(startDate: string, endDate: string): Promise<ComplianceReport['findings'][0]> {
+  private async checkBreachNotificationCompliance(_startDate: string, _endDate: string): Promise<ComplianceReport['findings'][0]> {
     const securityAlerts = await this.getSecurityAlerts('active');
     const criticalAlerts = securityAlerts.filter(a => a.severity === 'critical');
     

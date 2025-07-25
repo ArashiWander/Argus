@@ -2,8 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   TextField,
   Button,
   Grid,
@@ -22,8 +20,23 @@ import {
   Select,
   MenuItem,
   Pagination,
+  Fade,
+  Grow,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
-import { Add as AddIcon, Refresh as RefreshIcon, Search as SearchIcon } from '@mui/icons-material';
+import { 
+  Add as AddIcon, 
+  Refresh as RefreshIcon, 
+  Search as SearchIcon,
+  Storage as StorageIcon,
+  FilterList as FilterIcon,
+} from '@mui/icons-material';
+import { logsApi } from '../services/api';
+import { LogEntry } from '../types';
+import { format } from 'date-fns';
+import { MetricCard } from '../components/ui/Cards';
+import { TableSkeleton } from '../components/ui/Skeletons';
 import { logsApi } from '../services/api';
 import { LogEntry } from '../types';
 import { format } from 'date-fns';
@@ -138,33 +151,130 @@ const Logs: React.FC = () => {
 
   return (
     <Box>
-      <Box display="flex" justifyContent="between" alignItems="center" mb={3}>
-        <Typography variant="h4" component="h1">
-          Logs
-        </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          onClick={() => fetchLogs(pagination.page)}
-          disabled={loading}
-        >
-          Refresh
-        </Button>
-      </Box>
+      {/* Header Section */}
+      <Fade in timeout={300}>
+        <Box mb={5}>
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3}>
+            <Box>
+              <Typography 
+                variant="h3" 
+                component="h1" 
+                sx={{
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  color: 'transparent',
+                  mb: 1,
+                }}
+              >
+                Logs
+              </Typography>
+              <Typography 
+                variant="h6" 
+                color="text.secondary" 
+                sx={{ fontWeight: 400, fontSize: '1.1rem' }}
+              >
+                Search, filter and submit application logs
+              </Typography>
+            </Box>
+            
+            <Tooltip title="Refresh logs data">
+              <IconButton
+                color="primary"
+                onClick={() => fetchLogs(pagination.page)}
+                disabled={loading}
+                sx={{
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                    transform: 'scale(1.05)',
+                  },
+                  '&:disabled': {
+                    bgcolor: 'action.disabled',
+                  },
+                  transition: 'all 0.2s ease-in-out',
+                }}
+              >
+                <RefreshIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
+
+          {/* Status Pills */}
+          <Box display="flex" gap={2} flexWrap="wrap">
+            <Chip
+              icon={<StorageIcon />}
+              label={`${pagination.total} Total Logs`}
+              variant="outlined"
+              sx={{ fontWeight: 500 }}
+            />
+            <Chip
+              icon={<FilterIcon />}
+              label={`${uniqueServices.length} Services`}
+              variant="outlined"
+              sx={{ fontWeight: 500 }}
+            />
+            {levelFilter && (
+              <Chip
+                label={`Level: ${levelFilter}`}
+                color="primary"
+                size="small"
+                onDelete={() => setLevelFilter('')}
+              />
+            )}
+            {serviceFilter && (
+              <Chip
+                label={`Service: ${serviceFilter}`}
+                color="secondary"
+                size="small"
+                onDelete={() => setServiceFilter('')}
+              />
+            )}
+          </Box>
+        </Box>
+      </Fade>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
+        <Fade in>
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3, 
+              borderRadius: 3,
+              '& .MuiAlert-message': {
+                fontSize: '0.9rem',
+                fontWeight: 500,
+              },
+            }} 
+            onClose={() => setError(null)}
+          >
+            {error}
+          </Alert>
+        </Fade>
       )}
 
       {success && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
-          {success}
-        </Alert>
+        <Fade in>
+          <Alert 
+            severity="success" 
+            sx={{ 
+              mb: 3, 
+              borderRadius: 3,
+              '& .MuiAlert-message': {
+                fontSize: '0.9rem',
+                fontWeight: 500,
+              },
+            }} 
+            onClose={() => setSuccess(null)}
+          >
+            {success}
+          </Alert>
+        </Fade>
       )}
 
-      <Grid container spacing={3}>
+      <Grid container spacing={4}>
         {/* Submit New Log */}
         <Grid item xs={12} md={6}>
           <Card>

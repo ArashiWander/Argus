@@ -11,33 +11,26 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  useMediaQuery,
-  useTheme,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
+  Fade,
+
 } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { 
   Visibility as VisibilityIcon,
   AccountCircle as AccountIcon,
   ExitToApp as LogoutIcon,
-  Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  Timeline as MetricsIcon,
-  Storage as LogsIcon,
-  Notifications as AlertsIcon,
-  Analytics as AnalyticsIcon,
-  Security as SecurityIcon,
+  LightMode as LightModeIcon,
+  DarkMode as DarkModeIcon,
+  MoreVert as MoreVertIcon,
+
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 const Navbar: React.FC = () => {
   const location = useLocation();
   const { user, logout, isAuthenticated } = useAuth();
+  const { mode, toggleMode } = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const theme = useTheme();
@@ -67,177 +60,220 @@ const Navbar: React.FC = () => {
     handleMenuClose();
   };
 
-  const handleMobileMenuToggle = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  const handleMobileMenuClose = () => {
-    setMobileMenuOpen(false);
-  };
-
-  const getCurrentPageTitle = () => {
-    const currentItem = navItems.find(item => item.path === location.pathname);
-    return currentItem ? currentItem.label : 'Argus';
-  };
-
   return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          {isMobile && (
-            <Tooltip title="Open navigation menu">
-              <IconButton
-                color="inherit"
-                aria-label="open navigation menu"
-                onClick={handleMobileMenuToggle}
-                sx={{ mr: 2 }}
-              >
-                <MenuIcon />
-              </IconButton>
-            </Tooltip>
-          )}
-          
-          <VisibilityIcon sx={{ mr: 2 }} aria-hidden="true" />
-          <Typography 
-            variant="h6" 
-            component="div" 
-            sx={{ flexGrow: 1 }}
-            aria-label={`Argus Monitoring Platform - Current page: ${getCurrentPageTitle()}`}
+    <AppBar position="static" elevation={0}>
+      <Toolbar sx={{ minHeight: '72px !important' }}>
+        {/* Logo and Brand */}
+        <Box display="flex" alignItems="center" sx={{ mr: 4 }}>
+          <Box
+            sx={{
+              p: 1,
+              borderRadius: 2,
+              background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+              mr: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            Argus Monitoring Platform
-            {isMobile && (
-              <Typography variant="body2" component="div">
-                {getCurrentPageTitle()}
-              </Typography>
-            )}
-          </Typography>
-          
-          {!isMobile && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} role="navigation" aria-label="Main navigation">
-              {navItems.map((item) => (
-                <Tooltip key={item.path} title={`Go to ${item.label}`}>
-                  <Button
-                    color="inherit"
-                    component={RouterLink}
-                    to={item.path}
-                    aria-label={`Navigate to ${item.label}`}
-                    aria-current={location.pathname === item.path ? 'page' : undefined}
-                    sx={{
-                      backgroundColor: location.pathname === item.path ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                      '&:focus': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                      },
+            <VisibilityIcon sx={{ color: 'white', fontSize: 24 }} />
+          </Box>
+          <Box>
+            <Typography 
+              variant="h5" 
+              component="div" 
+              fontWeight={700}
+              sx={{
+                background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                color: 'transparent',
+                lineHeight: 1,
+              }}
+            >
+              Argus
+            </Typography>
+            <Typography 
+              variant="caption" 
+              color="text.secondary"
+              sx={{ fontSize: '0.65rem', fontWeight: 500, letterSpacing: '0.5px' }}
+            >
+              MONITORING PLATFORM
+            </Typography>
+          </Box>
+        </Box>
+        
+        {/* Navigation Items */}
+        <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1, flex: 1 }}>
+          {navItems.map((item) => (
+            <Button
+              key={item.path}
+              color="inherit"
+              component={RouterLink}
+              to={item.path}
+              sx={{
+                px: 2,
+                py: 1,
+                borderRadius: 2,
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                position: 'relative',
+                color: 'text.primary',
+                backgroundColor: location.pathname === item.path ? 'action.selected' : 'transparent',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  backgroundColor: 'action.hover',
+                  transform: 'translateY(-1px)',
+                },
+                '&::after': location.pathname === item.path ? {
+                  content: '""',
+                  position: 'absolute',
+                  bottom: 0,
+                  left: '50%',
+                  width: '60%',
+                  height: 2,
+                  background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                  transform: 'translateX(-50%)',
+                  borderRadius: '2px 2px 0 0',
+                } : {},
+              }}
+            >
+              {item.label}
+            </Button>
+          ))}
+        </Box>
+
+        {/* Right side actions */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          {/* Theme Toggle */}
+          <Tooltip title={`Switch to ${mode === 'light' ? 'dark' : 'light'} mode`}>
+            <IconButton 
+              onClick={toggleMode}
+              sx={{
+                borderRadius: 2,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                },
+              }}
+            >
+              {mode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
+            </IconButton>
+          </Tooltip>
+
+          {isAuthenticated && user ? (
+            <>
+              <Chip 
+                label={user.role} 
+                size="small" 
+                color="secondary" 
+                sx={{ 
+                  mx: 1,
+                  fontWeight: 500,
+                  fontSize: '0.75rem',
+                }}
+              />
+              <Tooltip title="Account settings">
+                <IconButton
+                  onClick={handleMenuOpen}
+                  sx={{
+                    p: 0.5,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    },
+                  }}
+                >
+                  <Avatar 
+                    sx={{ 
+                      width: 36, 
+                      height: 36, 
+                      background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                      fontWeight: 600,
                     }}
                   >
-                    {item.label}
-                  </Button>
-                </Tooltip>
-              ))}
-            </Box>
+                    {user.username.charAt(0).toUpperCase()}
+                  </Avatar>
+                </IconButton>
+              </Tooltip>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                TransitionComponent={Fade}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'right',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                PaperProps={{
+                  sx: {
+                    mt: 1,
+                    minWidth: 180,
+                    borderRadius: 2,
+                    boxShadow: '0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                  },
+                }}
+              >
+                <MenuItem disabled sx={{ opacity: '1 !important' }}>
+                  <AccountIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  <Box>
+                    <Typography variant="body2" fontWeight={500}>
+                      {user.username}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {user.role}
+                    </Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem 
+                  onClick={handleLogout}
+                  sx={{
+                    color: 'error.main',
+                    '&:hover': {
+                      backgroundColor: 'error.light',
+                      color: 'error.contrastText',
+                    },
+                  }}
+                >
+                  <LogoutIcon sx={{ mr: 1 }} />
+                  Logout
+                </MenuItem>
+              </Menu>
+            </>
+          ) : (
+            <Button 
+              color="primary" 
+              variant="contained"
+              component={RouterLink} 
+              to="/auth"
+              sx={{
+                borderRadius: 2,
+                fontWeight: 500,
+                px: 3,
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                  transform: 'translateY(-1px)',
+                },
+              }}
+            >
+              Login
+            </Button>
           )}
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {isAuthenticated && user ? (
-              <>
-                <Tooltip title={`Current role: ${user.role}`}>
-                  <Chip 
-                    label={user.role} 
-                    size="small" 
-                    color="secondary" 
-                    sx={{ mx: 1 }}
-                  />
-                </Tooltip>
-                <Tooltip title={`Account menu for ${user.username}`}>
-                  <IconButton
-                    color="inherit"
-                    onClick={handleMenuOpen}
-                    sx={{ ml: 1 }}
-                    aria-label="Account menu"
-                    aria-controls={Boolean(anchorEl) ? 'account-menu' : undefined}
-                    aria-haspopup="true"
-                    aria-expanded={Boolean(anchorEl) ? 'true' : undefined}
-                  >
-                    <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
-                      {user.username.charAt(0).toUpperCase()}
-                    </Avatar>
-                  </IconButton>
-                </Tooltip>
-                <Menu
-                  id="account-menu"
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                  }}
-                  MenuListProps={{
-                    'aria-labelledby': 'account-menu',
-                  }}
-                >
-                  <MenuItem disabled>
-                    <AccountIcon sx={{ mr: 1 }} />
-                    {user.username}
-                  </MenuItem>
-                  <MenuItem onClick={handleLogout}>
-                    <LogoutIcon sx={{ mr: 1 }} />
-                    Logout
-                  </MenuItem>
-                </Menu>
-              </>
-            ) : (
-              <Tooltip title="Sign in to your account">
-                <Button 
-                  color="inherit" 
-                  component={RouterLink} 
-                  to="/auth"
-                  aria-label="Sign in to your account"
-                >
-                  Login
-                </Button>
-              </Tooltip>
-            )}
-          </Box>
-        </Toolbar>
-      </AppBar>
+          {/* Mobile menu button */}
+          <IconButton
+            sx={{ 
+              display: { xs: 'flex', md: 'none' },
+              ml: 1,
+            }}
+          >
+            <MoreVertIcon />
+          </IconButton>
 
-      {/* Mobile Navigation Drawer */}
-      <Drawer
-        anchor="left"
-        open={mobileMenuOpen}
-        onClose={handleMobileMenuClose}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile
-        }}
-      >
-        <Box
-          sx={{ width: 250 }}
-          role="navigation"
-          aria-label="Mobile navigation"
-          onClick={handleMobileMenuClose}
-          onKeyDown={handleMobileMenuClose}
-        >
-          <List>
-            {navItems.map((item) => (
-              <ListItem key={item.path} disablePadding>
-                <ListItemButton
-                  component={RouterLink}
-                  to={item.path}
-                  selected={location.pathname === item.path}
-                  aria-label={`Navigate to ${item.label}`}
-                >
-                  <ListItemIcon>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText primary={item.label} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
         </Box>
       </Drawer>
     </>

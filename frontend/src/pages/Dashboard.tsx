@@ -6,8 +6,9 @@ import {
   Typography,
   Box,
   Chip,
-  Alert,
-  CircularProgress,
+  Button,
+  Tooltip,
+  IconButton,
 } from '@mui/material';
 import { 
   Speed as SpeedIcon,
@@ -15,10 +16,15 @@ import {
   Timeline as TimelineIcon,
   BugReport as BugReportIcon,
   Notifications as NotificationsIcon,
+  Refresh as RefreshIcon,
+  Help as HelpIcon,
 } from '@mui/icons-material';
 import { healthApi, metricsApi, logsApi, alertsApi } from '../services/api';
 import { HealthStatus } from '../types';
 import { MetricsChart, LogsChart } from '../components/Charts';
+import ErrorDisplay from '../components/ErrorDisplay';
+import LoadingState, { EmptyState } from '../components/LoadingState';
+import { useNotifications, useCommonNotifications } from '../components/NotificationSystem';
 
 const Dashboard: React.FC = () => {
   const [health, setHealth] = useState<HealthStatus | null>(null);
@@ -27,31 +33,40 @@ const Dashboard: React.FC = () => {
   const [alertStats, setAlertStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { notifyConnectionError, notifyPlatformStatus } = useCommonNotifications();
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [healthResponse, metricsStatsResponse, logsStatsResponse, alertStatsResponse] = await Promise.all([
+        healthApi.getHealth(),
+        metricsApi.getStats(),
+        logsApi.getStats(),
+        alertsApi.getAlertStats().catch(() => ({ data: null })), // Don't fail if alerts not available
+      ]);
+
+      setHealth(healthResponse.data);
+      setMetricsStats(metricsStatsResponse.data);
+      setLogsStats(logsStatsResponse.data);
+      setAlertStats(alertStatsResponse.data);
+      
+      // Provide user feedback about platform status
+      notifyPlatformStatus(healthResponse.data.message === 'OK' || healthResponse.data.message === 'healthy');
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to fetch dashboard data';
+      setError(errorMessage);
+      
+      if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        notifyConnectionError();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [healthResponse, metricsStatsResponse, logsStatsResponse, alertStatsResponse] = await Promise.all([
-          healthApi.getHealth(),
-          metricsApi.getStats(),
-          logsApi.getStats(),
-          alertsApi.getAlertStats().catch(() => ({ data: null })), // Don't fail if alerts not available
-        ]);
-
-        setHealth(healthResponse.data);
-        setMetricsStats(metricsStatsResponse.data);
-        setLogsStats(logsStatsResponse.data);
-        setAlertStats(alertStatsResponse.data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
     
     // Refresh data every 30 seconds
@@ -61,17 +76,40 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="400px">
-        <CircularProgress />
-      </Box>
+      <LoadingState 
+        type="card"
+        context="dashboard"
+        message="Loading dashboard data..."
+        showTips={true}
+      />
     );
   }
 
   if (error) {
     return (
-      <Alert severity="error" sx={{ mb: 2 }}>
-        {error}
-      </Alert>
+      <ErrorDisplay 
+        error={error} 
+        context="dashboard loading"
+        onRetry={fetchDashboardData}
+        showTroubleshooting={true}
+      />
+    );
+  }
+
+  // Check if we have any data at all
+  const hasData = health || metricsStats?.total_metrics > 0 || logsStats?.total_logs > 0;
+  
+  if (!hasData) {
+    return (
+      <EmptyState
+        context="dashboard"
+        actionButton={
+          <Button variant="contained" onClick={fetchDashboardData} startIcon={<RefreshIcon />}>
+            Refresh Dashboard
+          </Button>
+        }
+        showSuggestions={true}
+      />
     );
   }
 
@@ -89,13 +127,28 @@ const Dashboard: React.FC = () => {
 
   return (
     <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Argus Dashboard
-      </Typography>
-      
-      <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-        Real-time monitoring and observability platform
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        <Box>
+          <Typography variant="h4" component="h1" gutterBottom>
+            Argus Dashboard
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            Real-time monitoring and observability platform
+          </Typography>
+        </Box>
+        <Box display="flex" gap={1}>
+          <Tooltip title="Refresh dashboard data">
+            <IconButton onClick={fetchDashboardData} color="primary">
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Need help? Click for guidance">
+            <IconButton color="primary">
+              <HelpIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </Box>
 
       <Grid container spacing={3} sx={{ mt: 2 }}>
         {/* System Health */}

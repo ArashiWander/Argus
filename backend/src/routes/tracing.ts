@@ -1,6 +1,6 @@
-import { Router, Request, Response } from 'express';
+import { Router, Response } from 'express';
 import { tracingService, TraceSpan } from '../services/tracingService';
-import { authenticateToken, optionalAuth, AuthenticatedRequest } from '../middleware/auth';
+import { optionalAuth, AuthenticatedRequest } from '../middleware/auth';
 import { logger } from '../config/logger';
 
 const router = Router();

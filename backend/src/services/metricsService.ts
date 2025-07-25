@@ -27,6 +27,18 @@ export interface MetricStats {
   newest_metric: string | null;
 }
 
+interface InfluxTableMeta {
+  toObject(row: string[]): Record<string, unknown>;
+}
+
+interface InfluxRowData {
+  _time: string;
+  _measurement: string;
+  value: number;
+  service: string;
+  [key: string]: unknown;
+}
+
 class MetricsService {
   private writeApi: WriteApi | null = null;
   private fallbackStorage: Metric[] = [];
@@ -162,8 +174,8 @@ class MetricsService {
     const metrics: Metric[] = [];
     
     await queryApi.queryRows(fluxQuery, {
-      next(row: any, tableMeta: any) {
-        const o = tableMeta.toObject(row);
+      next(row: string[], tableMeta: InfluxTableMeta) {
+        const o = tableMeta.toObject(row) as InfluxRowData;
         const metric: Metric = {
           id: `${o._time}-${Math.random().toString(36).substr(2, 9)}`,
           name: o._measurement,
@@ -183,7 +195,7 @@ class MetricsService {
 
         metrics.push(metric);
       },
-      error(error: any) {
+      error(error: unknown) {
         logger.error('Error in InfluxDB query:', error);
         throw error;
       },
@@ -247,11 +259,11 @@ class MetricsService {
 
     let totalMetrics = 0;
     await queryApi.queryRows(countQuery, {
-      next(row: any, tableMeta: any) {
-        const o = tableMeta.toObject(row);
+      next(row: string[], tableMeta: InfluxTableMeta) {
+        const o = tableMeta.toObject(row) as { _value?: number };
         totalMetrics = o._value || 0;
       },
-      error(error: any) {
+      error(error: unknown) {
         logger.error('Error in InfluxDB count query:', error);
       },
       complete() {

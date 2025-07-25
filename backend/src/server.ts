@@ -16,6 +16,7 @@ import { analyticsRoutes } from './routes/analytics';
 import { securityRoutes } from './routes/security';
 import { alertService } from './services/alertService';
 import { anomalyDetectionService } from './services/anomalyDetectionService';
+import { protocolManager } from './protocols/protocolManager';
 
 
 // Load environment variables
@@ -88,9 +89,16 @@ const startServer = async () => {
     // Initialize database connections
     await initializeDatabases();
     
+    // Start protocol services (gRPC, MQTT, Kafka)
+    await protocolManager.startProtocols();
+    
     app.listen(PORT, () => {
       logger.info(`Argus backend server running on port ${PORT}`);
       logger.info(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      
+      // Log enabled protocols
+      const enabledProtocols = protocolManager.getEnabledProtocols();
+      logger.info(`Enabled protocols: ${enabledProtocols.join(', ')}`);
     });
 
     // Start alert evaluation scheduler (every 1 minute)
@@ -134,6 +142,7 @@ startServer();
 // Graceful shutdown
 const gracefulShutdown = async () => {
   logger.info('Shutting down gracefully...');
+  await protocolManager.stopProtocols();
   await closeDatabases();
   process.exit(0);
 };

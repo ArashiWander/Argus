@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { logger } from '../config/logger';
 import { checkDatabaseHealth } from '../config/database';
+import { protocolManager } from '../protocols/protocolManager';
 
 const router = Router();
 
@@ -8,6 +9,7 @@ const router = Router();
 router.get('/', async (req: Request, res: Response) => {
   try {
     const dbHealth = await checkDatabaseHealth();
+    const protocolHealth = await protocolManager.healthCheck();
     
     const healthCheck = {
       uptime: process.uptime(),
@@ -21,7 +23,8 @@ router.get('/', async (req: Request, res: Response) => {
         cache: dbHealth.redis,
         influxdb: dbHealth.influx,
         elasticsearch: dbHealth.elasticsearch,
-      }
+      },
+      protocols: protocolHealth.protocols
     };
 
     res.status(200).json(healthCheck);

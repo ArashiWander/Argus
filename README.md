@@ -4,10 +4,13 @@ A comprehensive monitoring and observability platform designed to provide real-t
 
 ## Features
 
+- **Multi-Protocol Support**: HTTP REST, gRPC, MQTT, and Kafka protocols
 - **Real-time Monitoring**: Continuous visibility into system health and performance
 - **Metrics Collection**: Custom metrics submission and visualization
 - **Log Management**: Centralized log aggregation with search and filtering
-- **RESTful API**: Complete API for metrics and logs submission
+- **High-Performance Ingestion**: gRPC for high-throughput scenarios
+- **IoT Device Support**: MQTT protocol for edge and IoT devices
+- **Stream Processing**: Kafka integration for event-driven architectures
 - **Modern UI**: React-based web interface with Material-UI components
 - **Containerized**: Docker support for easy deployment
 - **Scalable**: Built for growth from small to enterprise deployments
@@ -70,6 +73,37 @@ For production-like experience with persistent storage:
 
 See [Database Setup Guide](docs/DATABASE_SETUP.md) for detailed instructions.
 
+### Multi-Protocol Configuration
+
+Enable additional protocols by setting environment variables:
+
+```bash
+cd backend
+# Copy environment template
+cp .env.example .env
+
+# Enable gRPC (high-performance)
+GRPC_ENABLED=true
+GRPC_PORT=50051
+
+# Enable MQTT (IoT devices) - requires MQTT broker
+MQTT_ENABLED=true
+MQTT_BROKER_URL=mqtt://localhost:1883
+
+# Enable Kafka (stream processing) - requires Kafka cluster
+KAFKA_ENABLED=true
+KAFKA_BROKERS=localhost:9092
+```
+
+For complete multi-protocol setup with all dependencies:
+
+```bash
+# Start full stack including MQTT broker and Kafka
+docker-compose -f docker-compose.full.yml up -d
+```
+
+See [Protocol Documentation](docs/PROTOCOLS.md) for detailed usage examples.
+
 ### Docker Deployment
 
 ```bash
@@ -84,12 +118,35 @@ The application will be available at `http://localhost`
 
 ## API Documentation
 
+### Supported Protocols
+
+| Protocol | Port | Status | Use Case |
+|----------|------|--------|----------|
+| **HTTP REST** | 3001 | ✅ Production | Web apps, general purpose |
+| **gRPC** | 50051 | ✅ Production | High-performance, microservices |
+| **MQTT** | 1883 | ✅ Production | IoT devices, edge computing |
+| **Kafka** | 9092 | ✅ Production | Stream processing, events |
+
 ### Health Check
 ```bash
 GET /api/health
 ```
 
-### Metrics
+Response includes protocol status:
+```json
+{
+  "protocols": {
+    "http": { "status": "healthy", "port": 3001 },
+    "grpc": { "status": "healthy", "port": 50051 },
+    "mqtt": { "status": "healthy", "brokerUrl": "mqtt://localhost:1883" },
+    "kafka": { "status": "healthy", "brokers": ["localhost:9092"] }
+  }
+}
+```
+
+### HTTP REST Examples
+
+#### Metrics
 ```bash
 # Get metrics
 GET /api/metrics?service=web-server&start=2023-01-01T00:00:00Z
@@ -132,6 +189,81 @@ POST /api/logs/bulk
     }
   ]
 }
+```
+
+### gRPC Client Examples
+
+```javascript
+// Node.js gRPC client
+const grpc = require('@grpc/grpc-js');
+const protoLoader = require('@grpc/proto-loader');
+
+const packageDefinition = protoLoader.loadSync('proto/argus.proto');
+const argus = grpc.loadPackageDefinition(packageDefinition).argus.v1;
+
+const client = new argus.MetricsService('localhost:50051', 
+  grpc.credentials.createInsecure());
+
+// Submit metric via gRPC
+client.SubmitMetric({
+  name: 'cpu.usage',
+  value: 75.5,
+  service: 'web-server'
+}, (error, response) => {
+  console.log('gRPC Response:', response);
+});
+```
+
+### MQTT Client Examples
+
+```javascript
+// Node.js MQTT client
+const mqtt = require('mqtt');
+const client = mqtt.connect('mqtt://localhost:1883');
+
+// Submit metric via MQTT
+client.publish('argus/metrics/web-server/cpu.usage', JSON.stringify({
+  name: 'cpu.usage',
+  value: 75.5,
+  service: 'web-server',
+  tags: { host: 'server-1' }
+}));
+
+// Submit log via MQTT
+client.publish('argus/logs/api-service/error', JSON.stringify({
+  level: 'error',
+  message: 'Database connection failed',
+  service: 'api-service'
+}));
+```
+
+### Kafka Producer Examples
+
+```javascript
+// Node.js Kafka producer
+const { Kafka } = require('kafkajs');
+
+const kafka = new Kafka({
+  clientId: 'my-app',
+  brokers: ['localhost:9092']
+});
+
+const producer = kafka.producer();
+
+await producer.send({
+  topic: 'argus-metrics',
+  messages: [{
+    key: 'web-server',
+    value: JSON.stringify({
+      name: 'cpu.usage',
+      value: 75.5,
+      service: 'web-server'
+    })
+  }]
+});
+```
+
+See [Protocol Documentation](docs/PROTOCOLS.md) for complete examples and usage patterns.
 ```
 
 ## Architecture

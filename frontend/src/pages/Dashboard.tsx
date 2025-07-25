@@ -6,6 +6,7 @@ import {
   Alert,
   Fade,
   Chip,
+
 } from '@mui/material';
 import { 
   Speed as SpeedIcon,
@@ -14,12 +15,14 @@ import {
   BugReport as BugReportIcon,
   Notifications as NotificationsIcon,
   Security as SecurityIcon,
+
 } from '@mui/icons-material';
 import { healthApi, metricsApi, logsApi, alertsApi } from '../services/api';
 import { HealthStatus } from '../types';
 import { MetricsChart, LogsChart } from '../components/Charts';
 import { StatCard, MetricCard, StatusCard } from '../components/ui/Cards';
 import { DashboardSkeleton } from '../components/ui/Skeletons';
+
 
 const Dashboard: React.FC = () => {
   const [health, setHealth] = useState<HealthStatus | null>(null);
@@ -28,31 +31,40 @@ const Dashboard: React.FC = () => {
   const [alertStats, setAlertStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { notifyConnectionError, notifyPlatformStatus } = useCommonNotifications();
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const [healthResponse, metricsStatsResponse, logsStatsResponse, alertStatsResponse] = await Promise.all([
+        healthApi.getHealth(),
+        metricsApi.getStats(),
+        logsApi.getStats(),
+        alertsApi.getAlertStats().catch(() => ({ data: null })), // Don't fail if alerts not available
+      ]);
+
+      setHealth(healthResponse.data);
+      setMetricsStats(metricsStatsResponse.data);
+      setLogsStats(logsStatsResponse.data);
+      setAlertStats(alertStatsResponse.data);
+      
+      // Provide user feedback about platform status
+      notifyPlatformStatus(healthResponse.data.message === 'OK' || healthResponse.data.message === 'healthy');
+    } catch (err: any) {
+      const errorMessage = err.message || 'Failed to fetch dashboard data';
+      setError(errorMessage);
+      
+      if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+        notifyConnectionError();
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const [healthResponse, metricsStatsResponse, logsStatsResponse, alertStatsResponse] = await Promise.all([
-          healthApi.getHealth(),
-          metricsApi.getStats(),
-          logsApi.getStats(),
-          alertsApi.getAlertStats().catch(() => ({ data: null })), // Don't fail if alerts not available
-        ]);
-
-        setHealth(healthResponse.data);
-        setMetricsStats(metricsStatsResponse.data);
-        setLogsStats(logsStatsResponse.data);
-        setAlertStats(alertStatsResponse.data);
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
     
     // Refresh data every 30 seconds
@@ -62,6 +74,7 @@ const Dashboard: React.FC = () => {
 
   if (loading) {
     return <DashboardSkeleton />;
+
   }
 
   if (error) {
@@ -81,6 +94,8 @@ const Dashboard: React.FC = () => {
           {error}
         </Alert>
       </Fade>
+
+
     );
   }
 
@@ -152,6 +167,7 @@ const Dashboard: React.FC = () => {
           </Box>
         </Box>
       </Fade>
+
 
       <Grid container spacing={4}>
         {/* Key Metrics Row */}

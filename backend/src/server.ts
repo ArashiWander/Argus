@@ -14,6 +14,8 @@ import { authRoutes } from './routes/auth';
 import { alertRoutes } from './routes/alerts';
 import { analyticsRoutes } from './routes/analytics';
 import { securityRoutes } from './routes/security';
+import { tracingRoutes } from './routes/tracing';
+import { anomalyRoutes } from './routes/anomalies';
 import { alertService } from './services/alertService';
 import { anomalyDetectionService } from './services/anomalyDetectionService';
 import { protocolManager } from './protocols/protocolManager';
@@ -59,6 +61,8 @@ app.use('/api/logs', logsRoutes);
 app.use('/api/alerts', alertRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/security', securityRoutes);
+app.use('/api/tracing', tracingRoutes);
+app.use('/api/anomalies', anomalyRoutes);
 
 
 // Root endpoint

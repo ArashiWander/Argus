@@ -12,6 +12,7 @@ import {
   IconButton,
   Tooltip,
   Fade,
+
 } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import { 
@@ -21,6 +22,7 @@ import {
   LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
   MoreVert as MoreVertIcon,
+
 } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -30,14 +32,19 @@ const Navbar: React.FC = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const { mode, toggleMode } = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const navItems = [
-    { label: 'Dashboard', path: '/' },
-    { label: 'Metrics', path: '/metrics' },
-    { label: 'Logs', path: '/logs' },
-    { label: 'Alerts', path: '/alerts' },
-    { label: 'Analytics', path: '/analytics' },
-    { label: 'Security', path: '/security' },
+
+    { label: 'Dashboard', path: '/', icon: <DashboardIcon /> },
+    { label: 'Metrics', path: '/metrics', icon: <MetricsIcon /> },
+    { label: 'Logs', path: '/logs', icon: <LogsIcon /> },
+    { label: 'Alerts', path: '/alerts', icon: <AlertsIcon /> },
+    { label: 'Analytics', path: '/analytics', icon: <AnalyticsIcon /> },
+    { label: 'Security', path: '/security', icon: <SecurityIcon /> },
+
   ];
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -266,9 +273,10 @@ const Navbar: React.FC = () => {
           >
             <MoreVertIcon />
           </IconButton>
+
         </Box>
-      </Toolbar>
-    </AppBar>
+      </Drawer>
+    </>
   );
 };
 

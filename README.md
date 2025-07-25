@@ -34,6 +34,14 @@ git clone https://github.com/ArashiWander/Argus.git && cd Argus && ./setup.sh &&
 ./argus help       # See all commands
 ```
 
+### 📦 Using npm scripts (alternative)
+```bash
+npm run setup      # Interactive setup wizard
+npm run start      # Start the platform  
+npm run demo       # Generate sample data
+npm run health     # Health check
+```
+
 ## 🚀 Current Status
 
 **Production Ready** - Argus is actively developed with completed core features and advanced capabilities.

@@ -14,7 +14,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  TextField,
   Table,
   TableBody,
   TableCell,
@@ -42,7 +41,7 @@ import {
 } from '@mui/icons-material';
 import { format, subHours } from 'date-fns';
 import { tracingApi } from '../services/api';
-import { TraceData, TraceSpan, ServiceDependency } from '../types';
+import { TraceData, ServiceDependency } from '../types';
 
 interface TabPanelProps {
   children?: React.ReactNode;

@@ -7,14 +7,20 @@ import {
   Alert,
   Link,
   Container,
-  Paper,
-  Avatar,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
+  Fade,
+  Grow,
 } from '@mui/material';
-import { PersonAdd as PersonAddIcon } from '@mui/icons-material';
+import { 
+  PersonAdd as PersonAddIcon,
+  Visibility as VisibilityIcon,
+} from '@mui/icons-material';
+import { authApi } from '../services/api';
+import { RegisterRequest } from '../types';
+import { MetricCard } from './ui/Cards';
 import { authApi } from '../services/api';
 import { RegisterRequest } from '../types';
 

@@ -1,8 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
 
+// Simple dummy slice for testing
+const dummySlice = {
+  name: 'dummy',
+  initialState: {},
+  reducers: {}
+};
+
 export const store = configureStore({
   reducer: {
-    // Will add slices here as we implement them
+    dummy: (state = {}) => state,
   },
 });
 

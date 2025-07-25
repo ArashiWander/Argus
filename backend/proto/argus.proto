@@ -1,0 +1,111 @@
+syntax = "proto3";
+
+package argus.v1;
+
+// Metrics service for high-performance metrics ingestion
+service MetricsService {
+  // Submit a single metric
+  rpc SubmitMetric(MetricRequest) returns (MetricResponse);
+  
+  // Submit multiple metrics in a stream
+  rpc SubmitMetricsStream(stream MetricRequest) returns (MetricResponse);
+  
+  // Query metrics with streaming response
+  rpc QueryMetrics(MetricQuery) returns (stream MetricResponse);
+}
+
+// Logs service for structured log ingestion
+service LogsService {
+  // Submit a single log entry
+  rpc SubmitLog(LogRequest) returns (LogResponse);
+  
+  // Submit multiple log entries in a stream
+  rpc SubmitLogsStream(stream LogRequest) returns (LogResponse);
+  
+  // Query logs with streaming response
+  rpc QueryLogs(LogQuery) returns (stream LogResponse);
+}
+
+// Health service for gRPC health checking
+service HealthService {
+  // Check service health
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+  
+  // Watch service health with streaming
+  rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
+}
+
+// Metric request message
+message MetricRequest {
+  string name = 1;           // Metric name (e.g., "cpu.usage")
+  double value = 2;          // Numeric value
+  int64 timestamp = 3;       // Unix timestamp in milliseconds (optional)
+  string service = 4;        // Source service identifier
+  map<string, string> tags = 5; // Additional metadata tags
+}
+
+// Metric response message
+message MetricResponse {
+  bool success = 1;
+  string message = 2;
+  string metric_id = 3;      // Unique identifier for the submitted metric
+  int64 timestamp = 4;       // Server timestamp when processed
+}
+
+// Metric query message
+message MetricQuery {
+  string service = 1;        // Filter by service (optional)
+  string metric_name = 2;    // Filter by metric name (optional)
+  int64 start_time = 3;      // Start time filter (unix timestamp)
+  int64 end_time = 4;        // End time filter (unix timestamp)
+  map<string, string> tags = 5; // Tag filters
+  int32 limit = 6;           // Maximum number of results
+}
+
+// Log request message
+message LogRequest {
+  string level = 1;          // Log level (debug, info, warn, error, fatal)
+  string message = 2;        // Log message content
+  int64 timestamp = 3;       // Unix timestamp in milliseconds (optional)
+  string service = 4;        // Source service identifier
+  map<string, string> tags = 5; // Additional metadata tags
+}
+
+// Log response message
+message LogResponse {
+  bool success = 1;
+  string message = 2;
+  string log_id = 3;         // Unique identifier for the submitted log
+  int64 timestamp = 4;       // Server timestamp when processed
+}
+
+// Log query message
+message LogQuery {
+  string service = 1;        // Filter by service (optional)
+  string level = 2;          // Filter by log level (optional)
+  int64 start_time = 3;      // Start time filter (unix timestamp)
+  int64 end_time = 4;        // End time filter (unix timestamp)
+  string search = 5;         // Search term for message content
+  map<string, string> tags = 6; // Tag filters
+  int32 limit = 7;           // Maximum number of results
+  int32 offset = 8;          // Pagination offset
+}
+
+// Health check request
+message HealthCheckRequest {
+  string service = 1;        // Service name to check (optional)
+}
+
+// Health check response
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3;
+  }
+  
+  ServingStatus status = 1;
+  string message = 2;
+  map<string, string> details = 3; // Additional health details
+}

@@ -2,6 +2,8 @@ import { Kafka, Producer, Consumer, EachMessagePayload } from 'kafkajs';
 import { logger } from '../config/logger';
 import { metricsService } from '../services/metricsService';
 import { logsService } from '../services/logsService';
+import { tracingService } from '../services/tracingService';
+import { alertService } from '../services/alertService';
 
 interface KafkaMetricPayload {
   name: string;
@@ -182,10 +184,29 @@ export class KafkaService {
 
   private async handleTracesMessage(data: any): Promise<void> {
     try {
-      // Placeholder for trace handling
-      logger.debug('Trace message received:', data);
-      // TODO: Implement trace processing when tracing service is ready
-      
+      // Validate trace data structure
+      if (!data.trace_id || !data.span_id || !data.operation_name || !data.service_name) {
+        logger.error('Invalid trace data received via Kafka:', { data });
+        return;
+      }
+
+      const spanData = {
+        id: data.span_id,
+        trace_id: data.trace_id,
+        parent_id: data.parent_id,
+        operation_name: data.operation_name,
+        service_name: data.service_name,
+        start_time: data.start_time || new Date().toISOString(),
+        end_time: data.end_time,
+        duration_ms: data.duration_ms,
+        status: data.status || 'ok',
+        tags: data.tags || {},
+        logs: data.logs || [],
+      };
+
+      const span = await tracingService.submitSpan(spanData);
+      logger.debug('Trace span created from Kafka message:', { spanId: span.id, traceId: span.trace_id });
+
     } catch (error) {
       logger.error('Error processing trace message:', error);
     }
@@ -193,10 +214,28 @@ export class KafkaService {
 
   private async handleAlertsMessage(data: any): Promise<void> {
     try {
-      // Placeholder for alert handling
-      logger.debug('Alert message received:', data);
-      // TODO: Implement alert processing
-      
+      // Validate alert data structure
+      if (!data.rule_name || !data.metric_name || !data.current_value || !data.threshold) {
+        logger.error('Invalid alert data received via Kafka:', { data });
+        return;
+      }
+
+      const alertData = {
+        rule_id: data.rule_id || 0,
+        rule_name: data.rule_name,
+        metric_name: data.metric_name,
+        service: data.service,
+        current_value: data.current_value,
+        threshold: data.threshold,
+        condition: data.condition || 'greater_than',
+        severity: data.severity || 'medium',
+        status: data.status || 'active',
+        message: data.message || `Alert for ${data.metric_name}: ${data.current_value} ${data.condition} ${data.threshold}`,
+      };
+
+      const alert = await alertService.createAlert(alertData);
+      logger.debug('Alert created from Kafka message:', { alertId: alert.id, ruleName: alert.rule_name });
+
     } catch (error) {
       logger.error('Error processing alert message:', error);
     }

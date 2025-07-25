@@ -235,4 +235,107 @@ export const anomaliesApi = {
     api.get('/anomalies/stats'),
 };
 
+// Analytics API
+export const analyticsApi = {
+  // Anomaly Detection
+  detectAnomalies: (params: { metric_name: string; service?: string; lookback_hours?: number }) =>
+    api.post('/analytics/anomalies/detect', params),
+  
+  getAnomalies: (params?: { status?: string; severity?: string }) =>
+    api.get('/analytics/anomalies', { params }),
+  
+  // Predictions
+  generatePredictions: (params: { metric_name: string; service?: string; horizon_hours?: number }) =>
+    api.post('/analytics/predictions', params),
+  
+  // Insights
+  generateInsights: (params: { service?: string; metric_names?: string[] }) =>
+    api.post('/analytics/insights/generate', params),
+  
+  getInsights: (params?: { service?: string; type?: string }) =>
+    api.get('/analytics/insights', { params }),
+  
+  // Capacity Planning
+  getCapacityPlanning: (params: { metric_name: string; service?: string; forecast_days?: number }) =>
+    api.post('/analytics/capacity-planning', params),
+  
+  // Dashboard
+  getDashboard: () =>
+    api.get('/analytics/dashboard'),
+  
+  // Batch Analysis
+  batchAnalyze: (params: { services: string[]; metrics: string[]; hours?: number }) =>
+    api.post('/analytics/batch/analyze', params),
+  
+  // Statistics
+  getStats: () =>
+    api.get('/analytics/stats'),
+};
+
+// Security API
+export const securityApi = {
+  // Security Events
+  submitEvent: (event: {
+    event_type: string;
+    severity: string;
+    source_ip?: string;
+    user_id?: string;
+    username?: string;
+    resource?: string;
+    action: string;
+    outcome: string;
+    timestamp?: string;
+    details?: any;
+  }) => api.post('/security/events', event),
+  
+  getEvents: (params?: {
+    event_type?: string;
+    severity?: string;
+    outcome?: string;
+    start?: string;
+    end?: string;
+    page?: number;
+    limit?: number;
+  }) => api.get('/security/events', { params }),
+  
+  // Security Alerts
+  getAlerts: (params?: { severity?: string; status?: string }) =>
+    api.get('/security/alerts', { params }),
+  
+  // Threat Evaluation
+  evaluateThreats: () =>
+    api.post('/security/threats/evaluate'),
+  
+  getThreatRules: () =>
+    api.get('/security/threats/rules'),
+  
+  // Audit
+  submitAuditEvent: (audit: {
+    user_id: string;
+    action: string;
+    resource: string;
+    outcome: string;
+    details?: any;
+  }) => api.post('/security/audit', audit),
+  
+  getAuditEvents: (params?: {
+    user_id?: string;
+    action?: string;
+    start?: string;
+    end?: string;
+  }) => api.get('/security/audit', { params }),
+  
+  // Compliance
+  generateComplianceReport: (framework: string) =>
+    api.post('/security/compliance/report', { framework }),
+  
+  // Dashboard
+  getDashboard: () =>
+    api.get('/security/dashboard'),
+  
+  // Statistics
+  getStats: () =>
+    api.get('/security/stats'),
+};
+
 export default api;

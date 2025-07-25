@@ -75,4 +75,30 @@ router.get('/live', (req: Request, res: Response) => {
   });
 });
 
+// Protocol status endpoint
+router.get('/protocols', async (req: Request, res: Response) => {
+  try {
+    const protocolStatus = protocolManager.getProtocolStatus();
+    const protocolHealth = await protocolManager.healthCheck();
+    const enabledProtocols = protocolManager.getEnabledProtocols();
+    const performanceMetrics = protocolManager.getPerformanceMetrics();
+
+    res.status(200).json({
+      timestamp: new Date().toISOString(),
+      enabled_protocols: enabledProtocols,
+      total_protocols: Object.keys(protocolStatus).length,
+      enabled_count: enabledProtocols.length,
+      status: protocolStatus,
+      health: protocolHealth.protocols,
+      performance: performanceMetrics
+    });
+  } catch (error) {
+    logger.error('Protocol status check failed:', error);
+    res.status(503).json({
+      error: 'Failed to retrieve protocol status',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 export { router as healthRoutes };

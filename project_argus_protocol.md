@@ -23,7 +23,7 @@ Project Argus implements a multi-protocol data ingestion layer to support divers
 - API Key support (planned)
 
 ### 2. gRPC
-**Status**: 🚧 To be implemented  
+**Status**: ✅ Implemented  
 **Use Case**: High-performance applications, microservices, low-latency requirements  
 **Port**: 50051 (configurable)
 
@@ -39,7 +39,7 @@ Project Argus implements a multi-protocol data ingestion layer to support divers
 - Bidirectional streaming capabilities
 
 ### 3. MQTT
-**Status**: 🚧 To be implemented  
+**Status**: ✅ Implemented  
 **Use Case**: IoT devices, sensor networks, edge computing  
 **Port**: 1883 (standard), 8883 (TLS)
 
@@ -55,7 +55,7 @@ Project Argus implements a multi-protocol data ingestion layer to support divers
 - QoS 2: Exactly once delivery (critical alerts)
 
 ### 4. Apache Kafka
-**Status**: 🚧 To be implemented  
+**Status**: ✅ Implemented  
 **Use Case**: Stream processing, event sourcing, high-throughput data pipelines  
 **Default Port**: 9092
 
@@ -259,6 +259,13 @@ KAFKA_BROKERS=localhost:9092
 KAFKA_TOPICS_PREFIX=argus
 ```
 
+### Protocol Enablement
+By default, only HTTP is enabled. To enable additional protocols:
+
+1. **gRPC**: Set `GRPC_ENABLED=true`
+2. **MQTT**: Set `MQTT_ENABLED=true` and ensure MQTT broker is running
+3. **Kafka**: Set `KAFKA_ENABLED=true` and ensure Kafka cluster is running
+
 ### Protocol Selection Rules
 1. **Default**: HTTP REST API
 2. **High-throughput**: gRPC for services requiring >1000 RPS
@@ -272,23 +279,23 @@ KAFKA_TOPICS_PREFIX=argus
 - [x] Basic data models and validation
 - [x] Authentication and authorization
 
-### Phase 2: gRPC Support 🚧
-- [ ] Protocol buffer definitions
-- [ ] gRPC server implementation
-- [ ] Streaming support
-- [ ] TLS configuration
+### Phase 2: gRPC Support ✅
+- [x] Protocol buffer definitions
+- [x] gRPC server implementation
+- [x] Streaming support
+- [x] TLS configuration
 
-### Phase 3: MQTT Support 🚧
-- [ ] MQTT broker integration
-- [ ] Topic management
-- [ ] QoS handling
-- [ ] Device authentication
+### Phase 3: MQTT Support ✅
+- [x] MQTT broker integration
+- [x] Topic management
+- [x] QoS handling
+- [x] Device authentication
 
-### Phase 4: Kafka Integration 🚧
-- [ ] Producer implementation
-- [ ] Consumer groups
-- [ ] Topic management
-- [ ] Stream processing
+### Phase 4: Kafka Integration ✅
+- [x] Producer implementation
+- [x] Consumer groups
+- [x] Topic management
+- [x] Stream processing
 
 ### Phase 5: Optimization 🚧
 - [ ] Protocol benchmarking
@@ -310,6 +317,61 @@ KAFKA_TOPICS_PREFIX=argus
 - Dependency health checks
 - Performance degradation detection
 - Automatic failover capabilities
+
+### Protocol Status Endpoints
+
+#### Main Health Check
+```bash
+GET /api/health
+```
+Returns overall system health including protocol status.
+
+#### Dedicated Protocol Status
+```bash
+GET /api/health/protocols
+```
+Returns detailed protocol status information:
+
+```json
+{
+  "timestamp": "2025-01-15T10:30:00Z",
+  "enabled_protocols": ["http", "grpc"],
+  "total_protocols": 4,
+  "enabled_count": 2,
+  "status": {
+    "http": {
+      "enabled": true,
+      "port": 3001
+    },
+    "grpc": {
+      "enabled": true,
+      "port": 50051,
+      "tls": false
+    },
+    "mqtt": {
+      "enabled": false,
+      "connected": false,
+      "brokerUrl": "mqtt://localhost:1883"
+    },
+    "kafka": {
+      "enabled": false,
+      "connected": false,
+      "brokers": ["localhost:9092"]
+    }
+  },
+  "health": {
+    "http": {
+      "status": "healthy",
+      "port": 3001
+    },
+    "grpc": {
+      "status": "healthy",
+      "port": 50051
+    }
+  },
+  "performance": {}
+}
+```
 
 ## Client SDKs
 

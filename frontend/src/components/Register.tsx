@@ -11,16 +11,12 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Fade,
-  Grow,
+  Paper,
+  Avatar,
 } from '@mui/material';
 import { 
   PersonAdd as PersonAddIcon,
-  Visibility as VisibilityIcon,
 } from '@mui/icons-material';
-import { authApi } from '../services/api';
-import { RegisterRequest } from '../types';
-import { MetricCard } from './ui/Cards';
 import { authApi } from '../services/api';
 import { RegisterRequest } from '../types';
 

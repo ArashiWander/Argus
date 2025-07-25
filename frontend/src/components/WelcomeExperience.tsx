@@ -21,7 +21,6 @@ import {
   Visibility as ArgusIcon,
   Rocket as RocketIcon,
   CheckCircle as CheckIcon,
-  PlayArrow as PlayIcon,
   Speed as DashboardIcon,
   Timeline as MetricsIcon,
   Storage as LogsIcon,

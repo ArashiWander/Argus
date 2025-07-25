@@ -21,9 +21,10 @@ import {
   MenuItem,
   Pagination,
   Fade,
-  Grow,
   IconButton,
   Tooltip,
+  Card,
+  CardContent,
 } from '@mui/material';
 import { 
   Add as AddIcon, 
@@ -32,11 +33,6 @@ import {
   Storage as StorageIcon,
   FilterList as FilterIcon,
 } from '@mui/icons-material';
-import { logsApi } from '../services/api';
-import { LogEntry } from '../types';
-import { format } from 'date-fns';
-import { MetricCard } from '../components/ui/Cards';
-import { TableSkeleton } from '../components/ui/Skeletons';
 import { logsApi } from '../services/api';
 import { LogEntry } from '../types';
 import { format } from 'date-fns';

@@ -73,7 +73,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     // Auto-hide notification unless it's persistent
     if (!newNotification.persistent && newNotification.duration && newNotification.duration > 0) {
       setTimeout(() => {
-        hideNotification(id);
+        setNotifications(prev => prev.filter(notification => notification.id !== id));
       }, newNotification.duration);
     }
   }, []);
@@ -159,7 +159,7 @@ const NotificationContainer: React.FC<NotificationContainerProps> = ({ notificat
 
   const getNotificationMessage = (notification: Notification) => {
     // Provide helpful context for common operations
-    const { type, message, title } = notification;
+    const { type, message } = notification;
     
     if (type === 'success') {
       if (message.includes('metric') || message.includes('data')) {

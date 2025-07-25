@@ -256,6 +256,7 @@ function extractOldValues(req: AuditableRequest): Record<string, any> | undefine
   return {}; // Placeholder - would need to be implemented based on specific requirements
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function extractNewValues(req: AuditableRequest, responseBody?: any): Record<string, any> | undefined {
   if (req.method === 'DELETE') {
     return undefined;

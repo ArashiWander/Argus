@@ -22,6 +22,7 @@ import { HealthStatus } from '../types';
 import { MetricsChart, LogsChart } from '../components/Charts';
 import { StatCard, MetricCard, StatusCard } from '../components/ui/Cards';
 import { DashboardSkeleton } from '../components/ui/Skeletons';
+import { useCommonNotifications } from '../components/NotificationSystem';
 
 
 const Dashboard: React.FC = () => {

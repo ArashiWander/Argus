@@ -137,20 +137,20 @@ export class MqttService {
       }
 
       switch (topicParts[1]) {
-        case 'metrics':
-          await this.handleMetricMessage(topicParts, payload);
-          break;
-        case 'logs':
-          await this.handleLogMessage(topicParts, payload);
-          break;
-        case 'health':
-          await this.handleHealthMessage(topicParts, payload);
-          break;
-        case 'commands':
-          await this.handleCommandMessage(topicParts, payload);
-          break;
-        default:
-          logger.warn(`Unknown message type: ${topicParts[1]}`);
+      case 'metrics':
+        await this.handleMetricMessage(topicParts, payload);
+        break;
+      case 'logs':
+        await this.handleLogMessage(topicParts, payload);
+        break;
+      case 'health':
+        await this.handleHealthMessage(topicParts, payload);
+        break;
+      case 'commands':
+        await this.handleCommandMessage(topicParts, payload);
+        break;
+      default:
+        logger.warn(`Unknown message type: ${topicParts[1]}`);
       }
     } catch (error) {
       logger.error(`Error processing MQTT message on topic ${topic}:`, error);
@@ -237,14 +237,14 @@ export class MqttService {
         logger.info('Server command received:', payload);
         
         switch (payload.command) {
-          case 'health':
-            this.publishHealthStatus('online');
-            break;
-          case 'stats':
-            await this.publishServerStats();
-            break;
-          default:
-            logger.warn(`Unknown server command: ${payload.command}`);
+        case 'health':
+          this.publishHealthStatus('online');
+          break;
+        case 'stats':
+          await this.publishServerStats();
+          break;
+        default:
+          logger.warn(`Unknown server command: ${payload.command}`);
         }
       }
       

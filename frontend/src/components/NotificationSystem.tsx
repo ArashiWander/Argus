@@ -60,6 +60,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   const generateId = () => `notification-${Date.now()}-${Math.random()}`;
 
+  const hideNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  }, []);
+
   const showNotification = useCallback((notification: Omit<Notification, 'id'>) => {
     const id = generateId();
     const newNotification: Notification = {
@@ -76,11 +80,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         hideNotification(id);
       }, newNotification.duration);
     }
-  }, []);
-
-  const hideNotification = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
-  }, []);
+  }, [hideNotification]);
 
   const clearAll = useCallback(() => {
     setNotifications([]);
@@ -159,7 +159,7 @@ const NotificationContainer: React.FC<NotificationContainerProps> = ({ notificat
 
   const getNotificationMessage = (notification: Notification) => {
     // Provide helpful context for common operations
-    const { type, message, title } = notification;
+    const { type, message } = notification;
     
     if (type === 'success') {
       if (message.includes('metric') || message.includes('data')) {

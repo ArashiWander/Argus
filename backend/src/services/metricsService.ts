@@ -155,9 +155,9 @@ class MetricsService {
       fluxQuery += ` |> filter(fn: (r) => r._measurement == "${query.metric_name}")`;
     }
 
-    fluxQuery += ` |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")`;
-    fluxQuery += ` |> sort(columns: ["_time"], desc: true)`;
-    fluxQuery += ` |> limit(n: 1000)`;
+    fluxQuery += ' |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")';
+    fluxQuery += ' |> sort(columns: ["_time"], desc: true)';
+    fluxQuery += ' |> limit(n: 1000)';
 
     const metrics: Metric[] = [];
     

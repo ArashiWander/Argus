@@ -105,6 +105,7 @@ class AuthService {
       logger.info(`User created in memory: ${username} (${email})`);
 
       // Return user without password_hash
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password_hash: _, ...userWithoutPassword } = newUser;
       return userWithoutPassword;
     }
@@ -159,6 +160,7 @@ class AuthService {
     logger.info(`User authenticated: ${username}`);
 
     // Return user without password_hash
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password_hash: _, ...userWithoutPassword } = user;
 
     return {
@@ -186,6 +188,7 @@ class AuthService {
       // Fallback to in-memory storage
       const user = this.fallbackUsers.find(u => u.id === userId);
       if (user) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password_hash: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
       }
@@ -209,6 +212,7 @@ class AuthService {
     } else {
       // Fallback to in-memory storage
       return this.fallbackUsers.map(user => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password_hash: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
       });

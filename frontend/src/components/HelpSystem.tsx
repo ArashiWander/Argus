@@ -108,7 +108,7 @@ const HelpSystem: React.FC<HelpSystemProps> = ({ showTour = false, onTourComplet
               <ListItemText primary="Historical trend analysis" />
             </ListItem>
           </List>
-          <Alert severity="tip" sx={{ mt: 2 }}>
+          <Alert severity="info" sx={{ mt: 2 }}>
             <Typography variant="body2">
               <strong>Getting Started:</strong> Run <code>./argus demo</code> in your terminal to generate sample metrics data.
             </Typography>

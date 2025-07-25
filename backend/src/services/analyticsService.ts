@@ -128,8 +128,8 @@ class AnalyticsService {
                 anomaly_score, severity, status, created_at)
                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
               [anomaly.id, anomaly.metric_name, anomaly.service, anomaly.timestamp,
-               anomaly.expected_value, anomaly.actual_value, anomaly.anomaly_score,
-               anomaly.severity, anomaly.status, anomaly.created_at]
+                anomaly.expected_value, anomaly.actual_value, anomaly.anomaly_score,
+                anomaly.severity, anomaly.status, anomaly.created_at]
             );
           } catch (error) {
             logger.warn('Failed to store anomaly in database, using fallback:', error);
@@ -332,9 +332,9 @@ class AnalyticsService {
                 recommended_actions, confidence_score, created_at)
                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
               [insight.id, insight.type, insight.title, insight.description,
-               insight.severity, JSON.stringify(insight.affected_services),
-               JSON.stringify(insight.recommended_actions), insight.confidence_score,
-               insight.created_at]
+                insight.severity, JSON.stringify(insight.affected_services),
+                JSON.stringify(insight.recommended_actions), insight.confidence_score,
+                insight.created_at]
             );
           } catch (error) {
             logger.warn('Failed to store insight in database, using fallback:', error);

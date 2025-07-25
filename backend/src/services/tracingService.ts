@@ -1,4 +1,3 @@
-import { trace, SpanStatusCode, SpanKind } from '@opentelemetry/api';
 import { logger } from '../config/logger';
 
 export interface TraceSpan {

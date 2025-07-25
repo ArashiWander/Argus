@@ -1,4 +1,3 @@
-import { Client as ElasticsearchClient } from '@elastic/elasticsearch';
 import { elasticsearch } from '../config/database';
 import { logger } from '../config/logger';
 

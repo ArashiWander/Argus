@@ -109,7 +109,7 @@ class AlertService {
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true, $10, NOW(), NOW())
            RETURNING *`,
           [name, description, metric_name, service, condition, threshold, 
-           duration_minutes, severity, JSON.stringify(notification_channels), created_by]
+            duration_minutes, severity, JSON.stringify(notification_channels), created_by]
         );
 
         const rule = result.rows[0];
@@ -263,8 +263,8 @@ class AlertService {
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false)
            RETURNING *`,
           [alertData.rule_id, alertData.rule_name, alertData.metric_name, alertData.service,
-           alertData.current_value, alertData.threshold, alertData.condition, 
-           alertData.severity, alertData.status, newAlert.triggered_at, alertData.message]
+            alertData.current_value, alertData.threshold, alertData.condition, 
+            alertData.severity, alertData.status, newAlert.triggered_at, alertData.message]
         );
 
         return result.rows[0];
@@ -504,16 +504,16 @@ class AlertService {
 
   private evaluateCondition(value: number, condition: string, threshold: number): boolean {
     switch (condition) {
-      case 'greater_than':
-        return value > threshold;
-      case 'less_than':
-        return value < threshold;
-      case 'equals':
-        return Math.abs(value - threshold) < 0.001; // Float comparison with tolerance
-      case 'not_equals':
-        return Math.abs(value - threshold) >= 0.001;
-      default:
-        return false;
+    case 'greater_than':
+      return value > threshold;
+    case 'less_than':
+      return value < threshold;
+    case 'equals':
+      return Math.abs(value - threshold) < 0.001; // Float comparison with tolerance
+    case 'not_equals':
+      return Math.abs(value - threshold) >= 0.001;
+    default:
+      return false;
     }
   }
 
@@ -529,15 +529,15 @@ class AlertService {
 
       try {
         switch (channel.type) {
-          case 'email':
-            await this.sendEmailNotification(alert, channel);
-            break;
-          case 'webhook':
-            await this.sendWebhookNotification(alert, channel);
-            break;
-          case 'slack':
-            await this.sendSlackNotification(alert, channel);
-            break;
+        case 'email':
+          await this.sendEmailNotification(alert, channel);
+          break;
+        case 'webhook':
+          await this.sendWebhookNotification(alert, channel);
+          break;
+        case 'slack':
+          await this.sendSlackNotification(alert, channel);
+          break;
         }
         
         logger.info(`Notification sent via ${channel.type}: ${channel.name}`);

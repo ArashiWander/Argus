@@ -113,20 +113,20 @@ export class KafkaService {
       });
 
       switch (topic) {
-        case 'argus-metrics':
-          await this.handleMetricsMessage(messageData);
-          break;
-        case 'argus-logs':
-          await this.handleLogsMessage(messageData);
-          break;
-        case 'argus-traces':
-          await this.handleTracesMessage(messageData);
-          break;
-        case 'argus-alerts':
-          await this.handleAlertsMessage(messageData);
-          break;
-        default:
-          logger.warn(`Unknown topic: ${topic}`);
+      case 'argus-metrics':
+        await this.handleMetricsMessage(messageData);
+        break;
+      case 'argus-logs':
+        await this.handleLogsMessage(messageData);
+        break;
+      case 'argus-traces':
+        await this.handleTracesMessage(messageData);
+        break;
+      case 'argus-alerts':
+        await this.handleAlertsMessage(messageData);
+        break;
+      default:
+        logger.warn(`Unknown topic: ${topic}`);
       }
 
     } catch (error) {

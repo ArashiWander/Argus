@@ -44,12 +44,14 @@ const Navbar: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const navItems = [
+
     { label: 'Dashboard', path: '/', icon: <DashboardIcon /> },
     { label: 'Metrics', path: '/metrics', icon: <MetricsIcon /> },
     { label: 'Logs', path: '/logs', icon: <LogsIcon /> },
     { label: 'Alerts', path: '/alerts', icon: <AlertsIcon /> },
     { label: 'Analytics', path: '/analytics', icon: <AnalyticsIcon /> },
     { label: 'Security', path: '/security', icon: <SecurityIcon /> },
+
   ];
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
